@@ -1,0 +1,239 @@
+/* Custom Admin Layout Styles */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f9;
+}
+
+.wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Header Styles - These are now mostly handled by Bootstrap navbar classes */
+/* Keeping minimal custom styles for specific elements not fully covered by Bootstrap */
+.main-header .header-logo {
+    height: 40px;
+}
+
+.main-header .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #1A237E;
+}
+
+.main-header .custom-brand-text {
+    color: #4A4A4A; /* Màu xám đậm hơn cho tiêu đề thương hiệu */
+}
+
+/* Sidebar Styles - Primarily custom layout and colors */
+.main-sidebar {
+    width: 250px;
+    padding-top: 80px; /* Offset for fixed header */
+    position: fixed;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.main-sidebar .sidebar-menu li .nav-link {
+    color: #4A4A4A;
+    font-size: 1.1rem;
+    transition: background-color 0.3s, color 0.3s;
+    padding: 10px 15px; /* Add explicit padding */
+    display: flex;
+    align-items: center;
+    width: 100%; /* Ensure it takes full width */
+}
+
+.main-sidebar .sidebar-menu li .nav-link i {
+    font-size: 1.2rem;
+    min-width: 25px; /* Give icons a fixed minimum width for alignment */
+}
+
+.main-sidebar .sidebar-menu li .nav-link:hover,
+.main-sidebar .sidebar-menu li .nav-link.active {
+    background-color: #E6EFFF;
+    color: #1A237E;
+    font-weight: bold;
+}
+
+.main-sidebar .sidebar-footer .btn-link {
+    color: #1A237E;
+    font-weight: bold;
+}
+
+/* Content Wrapper - Offset for sidebar and header */
+.content-wrapper {
+    margin-left: 250px;
+    padding-top: 80px;
+}
+
+/* Custom Success/Error Messages */
+.custom-success-message {
+    position: fixed;
+    top: 90px;
+    right: 20px;
+    z-index: 1050;
+    background-color: #5cb85c;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    max-width: 300px;
+    text-align: center;
+    padding: 15px 25px;
+}
+
+/* Department Table Custom Styles (beyond Bootstrap table) */
+.department-table {
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+.department-table thead tr {
+    background-color: #F8F9FA;
+}
+
+.department-table th {
+    color: #4A4A4A;
+}
+
+.department-table td {
+    color: #6C757D;
+}
+
+.department-table tbody tr {
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+.department-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Action Icons in Table */
+.action-icon {
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.edit-icon {
+    color: #007bff;
+}
+
+.edit-icon:hover {
+    color: #0056b3;
+}
+
+.delete-icon {
+    color: #dc3545;
+}
+
+.delete-icon:hover {
+    color: #bd2130;
+}
+
+/* Search Bar and Add Button Custom Styles */
+.search-bar {
+    width: 250px; /* Giữ độ rộng cố định */
+    background-color: #f8f9fa;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+    border-radius: 8px; /* Đảm bảo bo góc */
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 0; /* Loại bỏ padding ở đây, sẽ thêm vào input */
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 10px 15px; /* Thêm padding vào input */
+    border: none;
+    outline: none;
+    background-color: transparent;
+    font-size: 1rem;
+}
+
+.search-bar i {
+    color: #A0A0A0;
+    margin-left: 15px; /* Khoảng cách cho icon */
+}
+
+/* Pagination Custom Styles */
+.pagination .page-item .page-link {
+    border-radius: 5px; /* Bo góc nhẹ cho nút */
+    margin: 0 5px; /* Khoảng cách giữa các nút */
+    background-color: #f0f0f0; /* Màu nền nhẹ */
+    border: 1px solid #e0e0e0; /* Viền mỏng */
+    color: #4A4A4A; /* Màu chữ */
+    font-weight: bold;
+    padding: 8px 15px;
+}
+
+.pagination .page-item .page-link:hover {
+    background-color: #e6e6e6;
+    border-color: #d0d0d0;
+}
+
+.pagination .page-item.disabled .page-link {
+    background-color: #f8f9fa;
+    border-color: #e9ecef;
+    color: #adb5bd;
+    pointer-events: none; /* Vô hiệu hóa click */
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #1A237E; /* Màu xanh đậm cho nút active */
+    border-color: #1A237E;
+    color: white;
+}
+
+/* Modal Custom Styles */
+.modal-header .btn-close {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+}
+
+.modal-footer .btn-secondary {
+    background-color: #E0E0E0;
+    border-color: #E0E0E0;
+    color: #4A4A4A;
+    font-weight: bold;
+}
+
+.modal-footer .btn-secondary:hover {
+    background-color: #D3D3D3;
+    border-color: #D3D3D3;
+}
+
+.modal-footer .btn-primary {
+    background-color: #1A237E;
+    border-color: #1A237E;
+    color: white;
+    font-weight: bold;
+}
+
+.modal-footer .btn-primary:hover {
+    background-color: #141b6b;
+    border-color: #141b6b;
+}
+
+.form-label .text-danger {
+    font-weight: normal;
+}
+
+/* Custom style for the dark blue button in delete modal */
+.btn-dark-blue {
+    background-color: #1A237E;
+    color: white;
+    border-color: #1A237E;
+    font-weight: bold;
+}
+
+.btn-dark-blue:hover {
+    background-color: #141b6b;
+    border-color: #141b6b;
+} 

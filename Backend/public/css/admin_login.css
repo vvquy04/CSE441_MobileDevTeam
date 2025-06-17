@@ -1,0 +1,72 @@
+body {
+    min-height: 100vh;
+    background-image: url('../img/tla-16927191259151174443421.jpg'); /* Placeholder image */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative; /* For absolute positioning of header */
+}
+.header-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #1A237E; /* Màu xanh đậm */
+    color: white;
+    padding: 1rem 1.5rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+.login-container {
+    background-color: rgba(18, 26, 100, 0.95); /* Màu xanh đậm hơn, có độ trong suốt */
+    padding: 3rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    width: 100%;
+    max-width: 450px;
+    margin-top: 5rem; /* Để không bị che bởi header */
+    margin-bottom: 2rem;
+}
+.login-title {
+    color: white;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+}
+.form-label {
+    color: white;
+    text-align: left;
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+.form-control {
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    color: #495057;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+}
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+}
+.btn-custom-orange {
+    background-color: #FF5722; /* Màu cam */
+    border-color: #FF5722;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 8px;
+    width: 100%;
+    margin-top: 1.5rem;
+}
+.btn-custom-orange:hover {
+    background-color: #e64a19;
+    border-color: #e64a19;
+} 
