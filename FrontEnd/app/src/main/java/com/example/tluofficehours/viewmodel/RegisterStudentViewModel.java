@@ -7,7 +7,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.tluofficehours.model.RegisterFacultyRequest;
+import com.example.tluofficehours.model.RegisterStudentRequest;
 import com.example.tluofficehours.repository.AuthRepository;
 
 import java.io.IOException;
@@ -17,12 +17,12 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class RegisterFacultyViewModel extends AndroidViewModel {
+public class RegisterStudentViewModel extends AndroidViewModel {
     private MutableLiveData<String> successMessage = new MutableLiveData<>();
     private MutableLiveData<String> errorMessage = new MutableLiveData<>();
     private AuthRepository authRepository;
 
-    public RegisterFacultyViewModel(@NonNull Application application) {
+    public RegisterStudentViewModel(@NonNull Application application) {
         super(application);
         authRepository = new AuthRepository();
     }
@@ -39,15 +39,15 @@ public class RegisterFacultyViewModel extends AndroidViewModel {
         return authRepository;
     }
 
-    public void registerFaculty(String email, String password, String facultyName, String departmentId, String degree, String phoneNumber, String officeRoom) {
+    public void registerStudent(String email, String password, String studentName, String studentCode, String className, String phoneNumber) {
         String passwordConfirmation = password;
-        RegisterFacultyRequest request = new RegisterFacultyRequest(email, password, passwordConfirmation, facultyName, departmentId, degree, phoneNumber, officeRoom);
+        RegisterStudentRequest request = new RegisterStudentRequest(email, password, passwordConfirmation, studentName, studentCode, className, phoneNumber);
 
-        authRepository.registerFaculty(request).enqueue(new Callback<ResponseBody>() {
+        authRepository.registerStudent(request).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    successMessage.setValue("Đăng ký giảng viên thành công!");
+                    successMessage.setValue("Đăng ký sinh viên thành công!");
                 } else {
                     try {
                         String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
@@ -63,8 +63,6 @@ public class RegisterFacultyViewModel extends AndroidViewModel {
                                     errorMsg.append("Email không hợp lệ hoặc đã được sử dụng");
                                 } else if (errorBody.contains("Password")) {
                                     errorMsg.append("Mật khẩu không đúng định dạng (cần ít nhất 6 ký tự)");
-                                } else if (errorBody.contains("Department")) {
-                                    errorMsg.append("Bộ môn không tồn tại trong hệ thống");
                                 } else {
                                     errorMsg.append("Dữ liệu không hợp lệ: ").append(errorBody.replaceAll("<[^>]*>", "").trim());
                                 }
@@ -79,15 +77,15 @@ public class RegisterFacultyViewModel extends AndroidViewModel {
                                 errorMsg.append("Không tìm thấy tài nguyên yêu cầu");
                                 break;
                             case 409:
-                                errorMsg.append("Email đã được sử dụng trong hệ thống");
+                                errorMsg.append("Email hoặc mã sinh viên đã được sử dụng trong hệ thống");
                                 break;
                             case 422:
-                                if (errorBody.contains("department_id")) {
-                                    errorMsg.append("Mã bộ môn không hợp lệ hoặc không tồn tại");
-                                } else if (errorBody.contains("email")) {
+                                if (errorBody.contains("email")) {
                                     errorMsg.append("Email không hợp lệ hoặc đã được sử dụng");
                                 } else if (errorBody.contains("password")) {
                                     errorMsg.append("Mật khẩu không đúng định dạng");
+                                } else if (errorBody.contains("StudentCode")) {
+                                    errorMsg.append("Mã sinh viên đã được sử dụng");
                                 } else {
                                     errorMsg.append("Dữ liệu không hợp lệ: ").append(errorBody.replaceAll("<[^>]*>", "").trim());
                                 }
@@ -137,4 +135,4 @@ public class RegisterFacultyViewModel extends AndroidViewModel {
             }
         });
     }
-}
+} 

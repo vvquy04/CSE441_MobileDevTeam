@@ -13,15 +13,22 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    public function test()
+    {
+        return response()->json(['message' => 'AuthController working']);
+    }
+
     public function registerFaculty(Request $request)
     {
         $request->validate([
-            'email' => ['required', 'email', 'unique:users,email', 'regex:/^[a-zA-Z0-9._%+-]+@e\.tlu\.edu\.vn$/'],
+            'email' => ['required', 'email', 'unique:users,email', 'regex:/^[a-zA-Z0-9._%+-]+@tlu\.edu\.vn$/'],
             'password' => 'required|min:6|confirmed',
-            'FacultyName' => 'required|string|max:255',
-            'DepartmentId' => 'required|string|exists:departments,DepartmentId',
-            'Biography' => 'nullable|string',
-            'PhoneNumber' => 'nullable|string|max:20',
+            'faculty_name' => 'required|string|max:255',
+            'department_id' => 'required|string|exists:departments,DepartmentId',
+            'degree' => 'nullable|string|max:255',
+            'phone_number' => 'nullable|string|max:20',
+            'office_room' => 'nullable|string|max:255',
+            'avatar' => 'nullable|string',
         ]);
 
         $user = User::create([
@@ -35,11 +42,13 @@ class AuthController extends Controller
         }
 
         FacultyProfile::create([
-            'FacultyUserId' => $user->UserId,
-            'FacultyName' => $request->FacultyName,
-            'DepartmentId' => $request->DepartmentId,
-            'Biography' => $request->Biography,
-            'PhoneNumber' => $request->PhoneNumber,
+            'faculty_user_id' => $user->UserId,
+            'faculty_name' => $request->faculty_name,
+            'department_id' => $request->department_id,
+            'degree' => $request->degree,
+            'phone_number' => $request->phone_number,
+            'office_location' => $request->office_room,
+            'avatar' => $request->avatar,
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -60,7 +69,7 @@ class AuthController extends Controller
             'password' => 'required|min:6|confirmed',
             'StudentName' => 'required|string|max:255',
             'StudentCode' => 'required|string|max:50|unique:student_profiles,StudentCode',
-            'DepartmentId' => 'required|string|exists:departments,DepartmentId',
+            'ClassName' => 'nullable|string|max:50',
             'PhoneNumber' => 'nullable|string|max:20',
         ]);
 
@@ -76,10 +85,12 @@ class AuthController extends Controller
 
         StudentProfile::create([
             'StudentUserId' => $user->UserId,
-            'StudentName' => $request->StudentName,
             'StudentCode' => $request->StudentCode,
-            'DepartmentId' => $request->DepartmentId,
-            'PhoneNumber' => $request->PhoneNumber,
+            'FullName' => $request->StudentName,
+            'DepartmentId' => null,
+            'ClassName' => $request->ClassName ?? '',
+            'EnrollmentYear' => date('Y'),
+            'EmailContact' => $request->email,
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
