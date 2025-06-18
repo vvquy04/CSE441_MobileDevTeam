@@ -9,21 +9,24 @@ class FacultyProfile extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'FacultyUserId';
+    protected $primaryKey = 'faculty_user_id';
     protected $fillable = [
-        'FacultyUserId',
-        'DepartmentId',
-        'OfficeLocation',
-        'Bio'
+        'faculty_user_id',
+        'faculty_name',
+        'department_id',
+        'degree',
+        'phone_number',
+        'office_location',
+        'avatar'
     ];
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'FacultyUserId', 'UserId');
+        return $this->belongsTo(User::class, 'faculty_user_id', 'UserId');
     }
 
     public function department()
     {
-        return $this->belongsTo(Department::class, 'DepartmentId', 'DepartmentId');
+        return $this->belongsTo(Department::class, 'department_id', 'DepartmentId');
     }
 } 

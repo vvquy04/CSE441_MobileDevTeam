@@ -68,7 +68,7 @@ public class RegisterActivity extends AppCompatActivity {
             boolean isValid = true;
 
             if (!EmailValidator.isValidTLUEmail(email)) {
-                emailInputLayout.setError("Email phải có đuôi @e.tlu.edu.vn");
+                emailInputLayout.setError("Email phải có đuôi @e.tlu.edu.vn (sinh viên) hoặc @tlu.edu.vn (giảng viên)");
                 isValid = false;
             }
 
@@ -83,12 +83,26 @@ public class RegisterActivity extends AppCompatActivity {
             }
 
             if (isValid) {
-                // Chuyển sang màn hình nhập thông tin hồ sơ
-                Intent intent = new Intent(RegisterActivity.this, RegisterProfileFacultyActivity.class);
-                intent.putExtra("email", email);
-                intent.putExtra("password", password);
-                startActivity(intent);
+                // Auto-detect loại đăng ký dựa trên email
+                String userType = EmailValidator.detectUserType(email);
+                navigateToRegistrationForm(userType, email, password);
             }
         });
+    }
+
+    private void navigateToRegistrationForm(String userType, String email, String password) {
+        Intent intent;
+        if ("student".equals(userType)) {
+            // Đăng ký sinh viên
+            intent = new Intent(RegisterActivity.this, RegisterProfileStudentActivity.class);
+            Toast.makeText(this, "Email của bạn được nhận diện là sinh viên. Chuyển đến form đăng ký sinh viên", Toast.LENGTH_LONG).show();
+        } else {
+            // Đăng ký giảng viên
+            intent = new Intent(RegisterActivity.this, RegisterProfileFacultyActivity.class);
+            Toast.makeText(this, "Email của bạn được nhận diện là giảng viên. Chuyển đến form đăng ký giảng viên", Toast.LENGTH_LONG).show();
+        }
+        intent.putExtra("email", email);
+        intent.putExtra("password", password);
+        startActivity(intent);
     }
 }

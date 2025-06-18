@@ -50,4 +50,7 @@ dependencies {
 
     implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.8.6")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6")
+
+    implementation("com.github.bumptech.glide:glide:4.15.1")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
 }

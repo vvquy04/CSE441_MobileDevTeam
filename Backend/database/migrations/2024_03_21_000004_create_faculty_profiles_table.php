@@ -9,11 +9,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('faculty_profiles', function (Blueprint $table) {
-            $table->id('FacultyUserId');
-            $table->string('DepartmentId');
-            $table->foreign('DepartmentId')->references('DepartmentId')->on('departments')->onDelete('cascade');
-            $table->string('OfficeLocation', 255);
-            $table->text('Bio')->nullable();
+            $table->id('faculty_user_id');
+            $table->string('faculty_name');
+            $table->string('department_id');
+            $table->foreign('department_id')->references('DepartmentId')->on('departments')->onDelete('cascade');
+            $table->string('degree')->nullable();
+            $table->string('phone_number')->nullable();
+            $table->string('office_location', 255);
+            $table->text('bio')->nullable();
+            $table->string('avatar')->nullable();
             $table->timestamps();
         });
     }
