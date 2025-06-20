@@ -12,12 +12,11 @@ class StudentProfile extends Model
     protected $primaryKey = 'StudentUserId';
     protected $fillable = [
         'StudentUserId',
+        'StudentName',
         'StudentCode',
-        'FullName',
-        'DepartmentId',
         'ClassName',
-        'EnrollmentYear',
-        'EmailContact'
+        'PhoneNumber',
+        'avatar'
     ];
 
     public function user()

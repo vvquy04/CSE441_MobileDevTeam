@@ -10,13 +10,11 @@ return new class extends Migration
     {
         Schema::create('student_profiles', function (Blueprint $table) {
             $table->id('StudentUserId');
-            $table->string('StudentCode', 20);
-            $table->string('FullName', 100);
-            $table->string('DepartmentId');
-            $table->foreign('DepartmentId')->references('DepartmentId')->on('departments')->onDelete('cascade');
-            $table->string('ClassName', 50);
-            $table->integer('EnrollmentYear');
-            $table->string('EmailContact', 255);
+            $table->string('StudentName', 255);
+            $table->string('StudentCode', 50)->unique();
+            $table->string('ClassName', 50)->nullable();
+            $table->string('PhoneNumber', 20)->nullable();
+            $table->string('avatar')->nullable();
             $table->timestamps();
         });
     }

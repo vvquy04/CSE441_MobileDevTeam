@@ -9,17 +9,31 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Headers;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.Part;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 
 import java.util.List;
 
 public interface ApiService {
+    @Multipart
     @POST("api/auth/register-faculty")
     @Headers({
-        "Content-Type: application/json",
         "Accept: application/json"
     })
-    Call<ResponseBody> registerFaculty(@Body RegisterFacultyRequest request);
+    Call<ResponseBody> registerFaculty(
+        @Part("email") RequestBody email,
+        @Part("password") RequestBody password,
+        @Part("password_confirmation") RequestBody passwordConfirmation,
+        @Part("faculty_name") RequestBody facultyName,
+        @Part("department_id") RequestBody departmentId,
+        @Part("degree") RequestBody degree,
+        @Part("phone_number") RequestBody phoneNumber,
+        @Part("office_room") RequestBody officeRoom,
+        @Part MultipartBody.Part avatar
+    );
 
     @GET("api/departments")
     @Headers({
@@ -27,17 +41,23 @@ public interface ApiService {
     })
     Call<List<Department>> getDepartments();
 
+    @POST("api/login")
+    @Headers({"Content-Type: application/json", "Accept: application/json", "Content-Type: application/json", "Accept: application/json"})
+    Call<ResponseBody> login(@Body LoginRequest request);
+
+    @Multipart
     @POST("api/auth/register-student")
     @Headers({
-        "Content-Type: application/json",
         "Accept: application/json"
     })
-    Call<ResponseBody> registerStudent(@Body RegisterStudentRequest request);
-
-    @POST("api/login")
-    @Headers({
-        "Content-Type: application/json",
-        "Accept: application/json"
-    })
-    Call<ResponseBody> login(@Body LoginRequest request);
+    Call<ResponseBody> registerStudent(
+        @Part("email") RequestBody email,
+        @Part("password") RequestBody password,
+        @Part("password_confirmation") RequestBody passwordConfirmation,
+        @Part("StudentName") RequestBody studentName,
+        @Part("StudentCode") RequestBody studentCode,
+        @Part("ClassName") RequestBody className,
+        @Part("PhoneNumber") RequestBody phoneNumber,
+        @Part MultipartBody.Part avatar
+    );
 }

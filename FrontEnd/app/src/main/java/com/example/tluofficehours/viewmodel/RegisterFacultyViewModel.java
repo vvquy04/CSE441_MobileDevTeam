@@ -1,6 +1,8 @@
 package com.example.tluofficehours.viewmodel;
 
 import android.app.Application;
+import android.content.Context;
+import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -9,9 +11,14 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.tluofficehours.model.RegisterFacultyRequest;
 import com.example.tluofficehours.repository.AuthRepository;
+import com.example.tluofficehours.utils.FileUtils;
 
+import java.io.File;
 import java.io.IOException;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -39,11 +46,28 @@ public class RegisterFacultyViewModel extends AndroidViewModel {
         return authRepository;
     }
 
-    public void registerFaculty(String email, String password, String facultyName, String departmentId, String degree, String phoneNumber, String officeRoom) {
+    public void registerFaculty(Context context, String email, String password, String facultyName, String departmentId, String degree, String phoneNumber, String officeRoom, Uri avatarUri) {
         String passwordConfirmation = password;
-        RegisterFacultyRequest request = new RegisterFacultyRequest(email, password, passwordConfirmation, facultyName, departmentId, degree, phoneNumber, officeRoom);
-
-        authRepository.registerFaculty(request).enqueue(new Callback<ResponseBody>() {
+        RequestBody emailBody = RequestBody.create(MediaType.parse("text/plain"), email);
+        RequestBody passwordBody = RequestBody.create(MediaType.parse("text/plain"), password);
+        RequestBody passwordConfirmationBody = RequestBody.create(MediaType.parse("text/plain"), passwordConfirmation);
+        RequestBody facultyNameBody = RequestBody.create(MediaType.parse("text/plain"), facultyName);
+        RequestBody departmentIdBody = RequestBody.create(MediaType.parse("text/plain"), departmentId);
+        RequestBody degreeBody = RequestBody.create(MediaType.parse("text/plain"), degree != null ? degree : "");
+        RequestBody phoneNumberBody = RequestBody.create(MediaType.parse("text/plain"), phoneNumber != null ? phoneNumber : "");
+        RequestBody officeRoomBody = RequestBody.create(MediaType.parse("text/plain"), officeRoom != null ? officeRoom : "");
+        MultipartBody.Part avatarPart = null;
+        if (avatarUri != null) {
+            try {
+                File file = FileUtils.createTempFileFromUri(context, avatarUri);
+                RequestBody reqFile = RequestBody.create(MediaType.parse("image/*"), file);
+                avatarPart = MultipartBody.Part.createFormData("avatar", file.getName(), reqFile);
+            } catch (IOException e) {
+                errorMessage.setValue("Không thể đọc file ảnh: " + e.getMessage());
+                return;
+            }
+        }
+        authRepository.registerFaculty(emailBody, passwordBody, passwordConfirmationBody, facultyNameBody, departmentIdBody, degreeBody, phoneNumberBody, officeRoomBody, avatarPart).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
@@ -52,11 +76,7 @@ public class RegisterFacultyViewModel extends AndroidViewModel {
                     try {
                         String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
                         StringBuilder errorMsg = new StringBuilder();
-
-                        // Thêm mã lỗi HTTP vào thông báo
                         errorMsg.append("Mã lỗi: ").append(response.code()).append("\n");
-
-                        // Xử lý các trường hợp lỗi cụ thể
                         switch (response.code()) {
                             case 400:
                                 if (errorBody.contains("Email")) {
@@ -98,11 +118,8 @@ public class RegisterFacultyViewModel extends AndroidViewModel {
                             default:
                                 errorMsg.append("Lỗi không xác định. Chi tiết: ").append(errorBody.replaceAll("<[^>]*>", "").trim());
                         }
-
-                        // In ra URL và method của request gặp lỗi
                         errorMsg.append("\nURL: ").append(call.request().url());
                         errorMsg.append("\nPhương thức: ").append(call.request().method());
-
                         errorMessage.setValue(errorMsg.toString());
                     } catch (IOException e) {
                         errorMessage.setValue("Lỗi xử lý phản hồi từ máy chủ:\n" + e.getMessage() +
@@ -110,12 +127,10 @@ public class RegisterFacultyViewModel extends AndroidViewModel {
                     }
                 }
             }
-
             @Override
             public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
                 StringBuilder errorMsg = new StringBuilder();
                 errorMsg.append("Lỗi kết nối: ");
-
                 if (t instanceof IOException) {
                     errorMsg.append("Không thể kết nối đến máy chủ\n");
                     errorMsg.append("Nguyên nhân: ").append(t.getMessage());
@@ -127,12 +142,9 @@ public class RegisterFacultyViewModel extends AndroidViewModel {
                     errorMsg.append("Lỗi không xác định\n");
                     errorMsg.append("Chi tiết: ").append(t.getMessage());
                 }
-
-                // Thêm thông tin về request
                 errorMsg.append("\n\nThông tin request:");
                 errorMsg.append("\nURL: ").append(call.request().url());
                 errorMsg.append("\nPhương thức: ").append(call.request().method());
-
                 errorMessage.setValue(errorMsg.toString());
             }
         });

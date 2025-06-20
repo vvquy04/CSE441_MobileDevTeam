@@ -23,8 +23,11 @@ public class RegisterStudentRequest {
     
     @SerializedName("PhoneNumber")
     private String PhoneNumber;
+    
+    @SerializedName("avatar")
+    private String avatar;
 
-    public RegisterStudentRequest(String email, String password, String password_confirmation, String StudentName, String StudentCode, String ClassName, String PhoneNumber) {
+    public RegisterStudentRequest(String email, String password, String password_confirmation, String StudentName, String StudentCode, String ClassName, String PhoneNumber, String avatar) {
         this.email = email;
         this.password = password;
         this.password_confirmation = password_confirmation;
@@ -32,6 +35,7 @@ public class RegisterStudentRequest {
         this.StudentCode = StudentCode;
         this.ClassName = ClassName;
         this.PhoneNumber = PhoneNumber;
+        this.avatar = avatar;
     }
 
     // Getters if needed
