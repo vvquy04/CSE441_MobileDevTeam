@@ -1,6 +1,9 @@
 package com.example.tluofficehours.viewmodel;
 
 import android.app.Application;
+import android.content.Context;
+import android.net.Uri;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -9,9 +12,14 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.tluofficehours.model.RegisterStudentRequest;
 import com.example.tluofficehours.repository.AuthRepository;
+import com.example.tluofficehours.utils.FileUtils;
 
+import java.io.File;
 import java.io.IOException;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -39,24 +47,44 @@ public class RegisterStudentViewModel extends AndroidViewModel {
         return authRepository;
     }
 
-    public void registerStudent(String email, String password, String studentName, String studentCode, String className, String phoneNumber) {
+    public void registerStudent(Context context, String email, String password, String studentName, String studentCode, String className, String phoneNumber, Uri avatarUri) {
         String passwordConfirmation = password;
-        RegisterStudentRequest request = new RegisterStudentRequest(email, password, passwordConfirmation, studentName, studentCode, className, phoneNumber);
-
-        authRepository.registerStudent(request).enqueue(new Callback<ResponseBody>() {
+        RequestBody emailBody = RequestBody.create(MediaType.parse("text/plain"), email);
+        RequestBody passwordBody = RequestBody.create(MediaType.parse("text/plain"), password);
+        RequestBody passwordConfirmationBody = RequestBody.create(MediaType.parse("text/plain"), passwordConfirmation);
+        RequestBody studentNameBody = RequestBody.create(MediaType.parse("text/plain"), studentName);
+        RequestBody studentCodeBody = RequestBody.create(MediaType.parse("text/plain"), studentCode);
+        RequestBody classNameBody = RequestBody.create(MediaType.parse("text/plain"), className != null ? className : "");
+        RequestBody phoneNumberBody = RequestBody.create(MediaType.parse("text/plain"), phoneNumber != null ? phoneNumber : "");
+        MultipartBody.Part avatarPart = null;
+        if (avatarUri != null) {
+            try {
+                File file = FileUtils.createTempFileFromUri(context, avatarUri);
+                RequestBody reqFile = RequestBody.create(MediaType.parse("image/*"), file);
+                avatarPart = MultipartBody.Part.createFormData("avatar", file.getName(), reqFile);
+            } catch (IOException e) {
+                errorMessage.setValue("Không thể đọc file ảnh: " + e.getMessage());
+                return;
+            }
+        }
+        authRepository.registerStudent(emailBody, passwordBody, passwordConfirmationBody, studentNameBody, studentCodeBody, classNameBody, phoneNumberBody, avatarPart).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
+                Log.d("API_RESPONSE", "Code: " + response.code());
+                try {
+                    if (response.errorBody() != null) {
+                        Log.d("API_RESPONSE", "Error: " + response.errorBody().string());
+                    }
+                } catch (IOException e) {
+                    Log.e("API_RESPONSE", "Error reading errorBody", e);
+                }
                 if (response.isSuccessful()) {
                     successMessage.setValue("Đăng ký sinh viên thành công!");
                 } else {
                     try {
                         String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
                         StringBuilder errorMsg = new StringBuilder();
-
-                        // Thêm mã lỗi HTTP vào thông báo
                         errorMsg.append("Mã lỗi: ").append(response.code()).append("\n");
-
-                        // Xử lý các trường hợp lỗi cụ thể
                         switch (response.code()) {
                             case 400:
                                 if (errorBody.contains("Email")) {
@@ -96,11 +124,8 @@ public class RegisterStudentViewModel extends AndroidViewModel {
                             default:
                                 errorMsg.append("Lỗi không xác định. Chi tiết: ").append(errorBody.replaceAll("<[^>]*>", "").trim());
                         }
-
-                        // In ra URL và method của request gặp lỗi
                         errorMsg.append("\nURL: ").append(call.request().url());
                         errorMsg.append("\nPhương thức: ").append(call.request().method());
-
                         errorMessage.setValue(errorMsg.toString());
                     } catch (IOException e) {
                         errorMessage.setValue("Lỗi xử lý phản hồi từ máy chủ:\n" + e.getMessage() +
@@ -108,12 +133,11 @@ public class RegisterStudentViewModel extends AndroidViewModel {
                     }
                 }
             }
-
             @Override
             public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+                Log.e("API_ERROR", "Lỗi kết nối: ", t);
                 StringBuilder errorMsg = new StringBuilder();
                 errorMsg.append("Lỗi kết nối: ");
-
                 if (t instanceof IOException) {
                     errorMsg.append("Không thể kết nối đến máy chủ\n");
                     errorMsg.append("Nguyên nhân: ").append(t.getMessage());
@@ -125,12 +149,9 @@ public class RegisterStudentViewModel extends AndroidViewModel {
                     errorMsg.append("Lỗi không xác định\n");
                     errorMsg.append("Chi tiết: ").append(t.getMessage());
                 }
-
-                // Thêm thông tin về request
                 errorMsg.append("\n\nThông tin request:");
                 errorMsg.append("\nURL: ").append(call.request().url());
                 errorMsg.append("\nPhương thức: ").append(call.request().method());
-
                 errorMessage.setValue(errorMsg.toString());
             }
         });

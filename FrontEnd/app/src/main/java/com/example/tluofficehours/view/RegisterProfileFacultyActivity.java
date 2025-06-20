@@ -28,6 +28,11 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import android.os.Build;
 
 public class RegisterProfileFacultyActivity extends AppCompatActivity {
 
@@ -45,6 +50,8 @@ public class RegisterProfileFacultyActivity extends AppCompatActivity {
 
     private ImageView imgProfile;
     private static final int PICK_IMAGE_REQUEST = 1;
+    private Uri selectedImageUri = null;
+    private static final int REQUEST_CODE_READ_IMAGE = 1001;
 
     @SuppressLint("WrongViewCast")
     @Override
@@ -83,8 +90,9 @@ public class RegisterProfileFacultyActivity extends AppCompatActivity {
         // Set click listener for choosing image
         TextView txtChooseImage = findViewById(R.id.txt_choose_image);
         txtChooseImage.setOnClickListener(v -> {
-            Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            startActivityForResult(galleryIntent, PICK_IMAGE_REQUEST);
+            if (checkAndRequestImagePermission()) {
+                openImagePicker();
+            }
         });
 
         // Observe LiveData for success/error messages
@@ -130,7 +138,7 @@ public class RegisterProfileFacultyActivity extends AppCompatActivity {
             }
 
             if (isValid) {
-                viewModel.registerFaculty(email, password, facultyName, selectedDepartment.getDepartmentId(), degree, phoneNumber, officeRoom);
+                viewModel.registerFaculty(this, email, password, facultyName, selectedDepartment.getDepartmentId(), degree, phoneNumber, officeRoom, selectedImageUri);
             }
         });
     }
@@ -172,11 +180,43 @@ public class RegisterProfileFacultyActivity extends AppCompatActivity {
         });
     }
 
+    private boolean checkAndRequestImagePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_MEDIA_IMAGES}, REQUEST_CODE_READ_IMAGE);
+                return false;
+            }
+        } else {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_READ_IMAGE);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void openImagePicker() {
+        Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(galleryIntent, PICK_IMAGE_REQUEST);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE_READ_IMAGE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openImagePicker();
+            } else {
+                Toast.makeText(this, "Bạn cần cấp quyền truy cập ảnh để chọn ảnh đại diện!", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null) {
-            Uri selectedImageUri = data.getData();
+            selectedImageUri = data.getData();
             imgProfile.setImageURI(selectedImageUri);
         }
     }

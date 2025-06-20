@@ -21,14 +21,14 @@ class AuthController extends Controller
     public function registerFaculty(Request $request)
     {
         $request->validate([
-            'email' => ['required', 'email', 'unique:users,email', 'regex:/^[a-zA-Z0-9._%+-]+@tlu\.edu\.vn$/'],
+            'email' => ['required', 'email', 'unique:users,email', 'regex:/^[a-zA-Z0-9._%+-]+@tlu\\.edu\\.vn$/'],
             'password' => 'required|min:6|confirmed',
             'faculty_name' => 'required|string|max:255',
             'department_id' => 'required|string|exists:departments,DepartmentId',
             'degree' => 'nullable|string|max:255',
             'phone_number' => 'nullable|string|max:20',
             'office_room' => 'nullable|string|max:255',
-            'avatar' => 'nullable|string',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $user = User::create([
@@ -41,6 +41,11 @@ class AuthController extends Controller
             $user->roles()->attach($facultyRole->RoleId);
         }
 
+        $avatarPath = null;
+        if ($request->hasFile('avatar')) {
+            $avatarPath = $request->file('avatar')->store('avatars', 'public');
+        }
+
         FacultyProfile::create([
             'faculty_user_id' => $user->UserId,
             'faculty_name' => $request->faculty_name,
@@ -48,7 +53,7 @@ class AuthController extends Controller
             'degree' => $request->degree,
             'phone_number' => $request->phone_number,
             'office_location' => $request->office_room,
-            'avatar' => $request->avatar,
+            'avatar' => $avatarPath,
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -58,7 +63,8 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'Bearer',
             'user' => $user,
-            'role' => 'faculty'
+            'role' => 'faculty',
+            'avatar_url' => $avatarPath ? asset('storage/' . $avatarPath) : null,
         ]);
     }
 
@@ -71,6 +77,7 @@ class AuthController extends Controller
             'StudentCode' => 'required|string|max:50|unique:student_profiles,StudentCode',
             'ClassName' => 'nullable|string|max:50',
             'PhoneNumber' => 'nullable|string|max:20',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $user = User::create([
@@ -83,14 +90,18 @@ class AuthController extends Controller
             $user->roles()->attach($studentRole->RoleId);
         }
 
+        $avatarPath = null;
+        if ($request->hasFile('avatar')) {
+            $avatarPath = $request->file('avatar')->store('avatars', 'public');
+        }
+
         StudentProfile::create([
             'StudentUserId' => $user->UserId,
+            'StudentName' => $request->StudentName,
             'StudentCode' => $request->StudentCode,
-            'FullName' => $request->StudentName,
-            'DepartmentId' => null,
             'ClassName' => $request->ClassName ?? '',
-            'EnrollmentYear' => date('Y'),
-            'EmailContact' => $request->email,
+            'PhoneNumber' => $request->PhoneNumber,
+            'avatar' => $avatarPath,
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -100,7 +111,8 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'Bearer',
             'user' => $user,
-            'role' => 'student'
+            'role' => 'student',
+            'avatar_url' => $avatarPath ? asset('storage/' . $avatarPath) : null,
         ]);
     }
 
