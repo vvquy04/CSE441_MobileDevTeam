@@ -14,30 +14,37 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.example.tluofficehours.R;
 import com.example.tluofficehours.model.LoginRequest;
+import com.example.tluofficehours.model.LoginResponse;
 import com.example.tluofficehours.api.ApiService;
 import com.example.tluofficehours.api.RetrofitClient;
-import okhttp3.ResponseBody;
+import com.example.tluofficehours.utils.SharedPrefsManager;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import org.json.JSONObject;
-import org.json.JSONArray;
 
 public class LoginActivity extends AppCompatActivity {
     private TextView txtRegister;
     private EditText edtEmail, edtPassword;
     private Button btnLogin;
+    private SharedPrefsManager sharedPrefsManager;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        
+        // Initialize SharedPrefsManager
+        sharedPrefsManager = SharedPrefsManager.getInstance(this);
+        
         txtRegister = findViewById(R.id.txt_register);
         edtEmail = findViewById(R.id.edt_email);
         edtPassword = findViewById(R.id.edt_password);
         btnLogin = findViewById(R.id.btn_login);
+        
         txtRegister.setOnClickListener(v -> {
             startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
         });
+        
         btnLogin.setOnClickListener(v -> {
             String email = edtEmail.getText().toString().trim();
             String password = edtPassword.getText().toString().trim();
@@ -48,44 +55,63 @@ public class LoginActivity extends AppCompatActivity {
             login(email, password);
         });
     }
+    
     private void login(String email, String password) {
         ApiService apiService = RetrofitClient.getApiService();
         LoginRequest loginRequest = new LoginRequest(email, password);
-        Call<ResponseBody> call = apiService.login(loginRequest);
-        call.enqueue(new Callback<ResponseBody>() {
+        Call<LoginResponse> call = apiService.login(loginRequest);
+        call.enqueue(new Callback<LoginResponse>() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+            public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    try {
-                        String responseStr = response.body().string();
-                        JSONObject jsonObject = new JSONObject(responseStr);
-                        JSONArray rolesArray = jsonObject.getJSONArray("roles");
-                        boolean isStudent = false, isFaculty = false;
-                        for (int i = 0; i < rolesArray.length(); i++) {
-                            String role = rolesArray.getString(i);
-                            if (role.equalsIgnoreCase("student")) isStudent = true;
-                            if (role.equalsIgnoreCase("faculty")) isFaculty = true;
+                    LoginResponse loginResponse = response.body();
+                    
+                    // Save auth token
+                    String accessToken = loginResponse.getAccessToken();
+                    android.util.Log.d("LoginActivity", "Login successful, token: " + (accessToken != null ? accessToken.substring(0, Math.min(20, accessToken.length())) + "..." : "null"));
+                    sharedPrefsManager.saveAuthToken(accessToken);
+                    android.util.Log.d("LoginActivity", "Token saved to SharedPrefs: " + sharedPrefsManager.getAuthToken());
+                    RetrofitClient.setAuthToken(accessToken);
+                    android.util.Log.d("LoginActivity", "Token set to RetrofitClient: " + accessToken);
+                    sharedPrefsManager.saveUserEmail(email);
+                    
+                    String[] roles = loginResponse.getRoles();
+                    boolean isStudent = false, isFaculty = false;
+                    String userRole = "";
+                    
+                    for (String role : roles) {
+                        if (role.equalsIgnoreCase("student")) {
+                            isStudent = true;
+                            userRole = "student";
                         }
-                        if (isStudent) {
-                            Intent intent = new Intent(LoginActivity.this, StudentMainActivity.class);
-                            startActivity(intent);
-                            finish();
-                        } else if (isFaculty) {
-                            Intent intent = new Intent(LoginActivity.this, FacultyMainActivity.class);
-                            startActivity(intent);
-                            finish();
-                        } else {
-                            Toast.makeText(LoginActivity.this, "Không xác định được vai trò!", Toast.LENGTH_SHORT).show();
+                        if (role.equalsIgnoreCase("faculty")) {
+                            isFaculty = true;
+                            userRole = "faculty";
                         }
-                    } catch (Exception e) {
-                        Toast.makeText(LoginActivity.this, "Lỗi xử lý dữ liệu!", Toast.LENGTH_SHORT).show();
+                    }
+                    
+                    // Save user role
+                    sharedPrefsManager.saveUserRole(userRole);
+                    android.util.Log.d("LoginActivity", "User role: " + userRole);
+                    
+                    if (isStudent) {
+                        Intent intent = new Intent(LoginActivity.this, StudentMainActivity.class);
+                        startActivity(intent);
+                        finish();
+                    } else if (isFaculty) {
+                        Intent intent = new Intent(LoginActivity.this, FacultyMainActivity.class);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        Toast.makeText(LoginActivity.this, "Không xác định được vai trò!", Toast.LENGTH_SHORT).show();
                     }
                 } else {
+                    android.util.Log.e("LoginActivity", "Login failed: " + response.code() + " - " + response.message());
                     Toast.makeText(LoginActivity.this, "Đăng nhập thất bại!", Toast.LENGTH_SHORT).show();
                 }
             }
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
+            public void onFailure(Call<LoginResponse> call, Throwable t) {
                 Toast.makeText(LoginActivity.this, "Lỗi kết nối!", Toast.LENGTH_SHORT).show();
             }
         });

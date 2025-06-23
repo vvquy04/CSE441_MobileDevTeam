@@ -31,8 +31,8 @@ public class RegisterFacultyRequest {
     private String avatar;
 
     public RegisterFacultyRequest(String email, String password, String passwordConfirmation,
-                                String facultyName, String departmentId, String degree,
-                                String phoneNumber, String officeRoom, String avatar) {
+                                  String facultyName, String departmentId, String degree,
+                                  String phoneNumber, String officeRoom, String avatar) {
         this.email = email;
         this.password = password;
         this.passwordConfirmation = passwordConfirmation;
