@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('available_slots', function (Blueprint $table) {
             $table->id('SlotId');
-            $table->foreignId('FacultyUserId')->constrained('users', 'UserId');
+            $table->foreignId('faculty_user_id')->constrained('users', 'UserId');
             $table->dateTime('StartTime');
             $table->dateTime('EndTime');
             $table->integer('MaxStudents')->default(1);

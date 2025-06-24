@@ -6,6 +6,11 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\DepartmentController;
 
+// Home route
+Route::get('/', function () {
+    return view('welcome');
+});
+
 // Admin Routes
 Route::prefix('admin')->group(function () {
     // Auth Routes

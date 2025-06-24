@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="32dp"
+    android:layout_margin="16dp"
+    android:background="@drawable/dialog_background"
+    android:gravity="center">
+
+    <TextView
+        android:id="@+id/dialog_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Xác nhận lịch hẹn?"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:gravity="center"
+        android:layout_marginBottom="12dp"/>
+
+    <TextView
+        android:id="@+id/dialog_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Bạn có chắc chắn muốn xác nhận lịch hẹn này? Hành động này sẽ không thể hoàn tác."
+        android:textSize="15sp"
+        android:textColor="#444"
+        android:gravity="center"
+        android:layout_marginBottom="24dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_dialog_cancel"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:background="@drawable/dialog_cancel_button_bg"
+            android:text="Quay lại"
+            android:textColor="#333333"
+            android:layout_marginEnd="8dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:textAllCaps="false"
+            android:textSize="16sp"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_dialog_confirm"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:background="@drawable/dialog_confirm_button_bg"
+            android:text="Xác nhận"
+            android:textColor="@android:color/white"
+            android:layout_marginStart="8dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:textAllCaps="false"
+            android:textSize="16sp"/>
+    </LinearLayout>
+
+</LinearLayout> 

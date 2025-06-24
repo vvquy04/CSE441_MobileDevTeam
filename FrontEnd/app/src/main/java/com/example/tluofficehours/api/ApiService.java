@@ -18,11 +18,16 @@ import okhttp3.RequestBody;
 import java.util.List;
 
 public interface ApiService {
+    
+    // ==================== AUTHENTICATION APIs ====================
+    
+    @POST("api/login")
+    @Headers({"Content-Type: application/json", "Accept: application/json"})
+    Call<ResponseBody> login(@Body LoginRequest request);
+
     @Multipart
     @POST("api/auth/register-faculty")
-    @Headers({
-        "Accept: application/json"
-    })
+    @Headers({"Accept: application/json"})
     Call<ResponseBody> registerFaculty(
         @Part("email") RequestBody email,
         @Part("password") RequestBody password,
@@ -35,21 +40,9 @@ public interface ApiService {
         @Part MultipartBody.Part avatar
     );
 
-    @GET("api/departments")
-    @Headers({
-        "Accept: application/json"
-    })
-    Call<List<Department>> getDepartments();
-
-    @POST("api/login")
-    @Headers({"Content-Type: application/json", "Accept: application/json", "Content-Type: application/json", "Accept: application/json"})
-    Call<ResponseBody> login(@Body LoginRequest request);
-
     @Multipart
     @POST("api/auth/register-student")
-    @Headers({
-        "Accept: application/json"
-    })
+    @Headers({"Accept: application/json"})
     Call<ResponseBody> registerStudent(
         @Part("email") RequestBody email,
         @Part("password") RequestBody password,
@@ -60,4 +53,10 @@ public interface ApiService {
         @Part("PhoneNumber") RequestBody phoneNumber,
         @Part MultipartBody.Part avatar
     );
+
+    // ==================== COMMON APIs ====================
+    
+    @GET("api/departments")
+    @Headers({"Accept: application/json"})
+    Call<List<Department>> getDepartments();
 }

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="@android:color/white">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Chi tiết lịch hẹn"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#071777"
+        android:gravity="center"
+        android:layout_marginBottom="20dp" />
+
+    <TextView
+        android:id="@+id/tvStudentName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tên sinh viên: Nguyễn Văn A"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/tvStudentClass"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Lớp: 64KTPM5"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/tvBookingTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Thời gian: 09:00 - 09:30"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/tvPurpose"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Mục đích: Tư vấn học tập"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Trạng thái: Chờ xác nhận"
+        android:textSize="16sp"
+        android:layout_marginBottom="20dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnBack"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:background="@drawable/dialog_cancel_button_bg"
+            android:text="Quay lại"
+            android:textColor="#333333"
+            android:layout_marginEnd="8dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:textAllCaps="false"
+            android:textSize="16sp"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnApprove"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:background="@drawable/dialog_confirm_button_bg"
+            android:text="Xác nhận"
+            android:textColor="@android:color/white"
+            android:layout_marginStart="8dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:visibility="gone"/>
+
+    </LinearLayout>
+
+</LinearLayout> 

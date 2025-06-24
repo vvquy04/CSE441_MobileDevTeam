@@ -1,0 +1,1422 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".view.AddScheduleActivity">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:background="@android:color/white"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:elevation="2dp">
+
+                <ImageButton
+                    android:id="@+id/btn_back"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="8dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_arrow_back"
+                    android:contentDescription="Quay lại" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Thêm lịch trống"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"
+                    android:gravity="center" />
+
+                <Button
+                    android:id="@+id/btn_save"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginEnd="16dp"
+                    android:text="Lưu"
+                    android:textColor="@android:color/white"
+                    android:backgroundTint="@color/colorPrimary"
+                    android:paddingHorizontal="20dp"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#F5F5F5"
+        android:layout_marginTop="56dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Tab Selection -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp"
+                android:layout_marginHorizontal="16dp"
+                android:elevation="1dp">
+
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/toggle_group"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:singleSelection="true"
+                    app:selectionRequired="true"
+                    app:checkedButton="@id/btn_fixed_schedule">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_fixed_schedule"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:text="Lịch cố định"
+                        android:textColor="@color/toggle_button_text_selector"
+                        app:backgroundTint="@color/toggle_button_background_selector"
+                        app:cornerRadius="12dp"
+                        app:strokeColor="@color/colorPrimary"
+                        app:strokeWidth="1dp"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_specific_date"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:text="Ngày cụ thể"
+                        android:textColor="@color/toggle_button_text_selector"
+                        app:backgroundTint="@color/toggle_button_background_selector"
+                        app:cornerRadius="12dp"
+                        app:strokeColor="@color/colorPrimary"
+                        app:strokeWidth="1dp"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+                </com.google.android.material.button.MaterialButtonToggleGroup>
+
+            </LinearLayout>
+
+            <!-- Specific Date Selection Card -->
+                <LinearLayout
+                android:id="@+id/layout_specific_date"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                android:padding="16dp"
+                android:layout_margin="16dp"
+                android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Chọn ngày"
+                        android:textColor="@android:color/black"
+                    android:textSize="16sp"
+                        android:textStyle="bold"
+                    android:layout_marginBottom="8dp"/>
+
+                <!-- CardView: Chọn ngày -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="2dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:background="@drawable/edit_text_border"
+                        android:gravity="center_vertical"
+                        android:padding="0dp"
+                        android:clickable="true"
+                        android:focusable="true">
+                    <TextView
+                        android:id="@+id/tv_selected_date"
+                            android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                        android:text="Chọn ngày"
+                        android:textColor="@android:color/black"
+                        android:textSize="16sp"
+                        android:padding="12dp"
+                            android:gravity="center_vertical" />
+                        <ImageView
+                            android:id="@+id/iv_calendar_icon"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_calendar"
+                            android:layout_marginEnd="12dp"
+                            android:contentDescription="Chọn ngày" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- CardView: Khung giờ cố định -->
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="2dp">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginBottom="16dp">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="Khung giờ cố định"
+                                    android:textStyle="bold"
+                                    android:textSize="16sp"
+                                    android:textColor="@android:color/black" />
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btn_add_time_slot_specific"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="+ Thêm khung giờ mới"
+                                    android:textColor="#1E40AF"
+                                    app:backgroundTint="@android:color/transparent" />
+                            </LinearLayout>
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/rv_time_slots_specific"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:nestedScrollingEnabled="false"
+                                tools:itemCount="3" />
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                <!-- CardView: Cấu hình slot -->
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="2dp">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Cấu hình slot"
+                                android:textStyle="bold"
+                                android:textSize="16sp"
+                                android:textColor="@android:color/black"
+                                android:layout_marginBottom="16dp" />
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Độ dài mỗi slot"
+                                android:textSize="14sp"
+                                android:textColor="@android:color/black"
+                                android:layout_marginBottom="8dp" />
+                            <RadioGroup
+                                android:id="@+id/rg_slot_duration_specific"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginBottom="16dp">
+                                <com.google.android.material.radiobutton.MaterialRadioButton
+                                    android:id="@+id/rb_15_min_specific"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="15 phút"
+                                    android:layout_marginEnd="16dp"
+                                    android:checked="false"
+                                    android:textColor="@color/gray_800"
+                                    app:buttonTint="@color/colorPrimary" />
+                                <com.google.android.material.radiobutton.MaterialRadioButton
+                                    android:id="@+id/rb_20_min_specific"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="20 phút"
+                                    android:layout_marginEnd="16dp"
+                                    android:checked="true"
+                                    android:textColor="@color/gray_800"
+                                    app:buttonTint="@color/colorPrimary" />
+                                <com.google.android.material.radiobutton.MaterialRadioButton
+                                    android:id="@+id/rb_30_min_specific"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="30 phút"
+                                    android:checked="false"
+                                    android:textColor="@color/gray_800"
+                                    app:buttonTint="@color/colorPrimary" />
+                            </RadioGroup>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginBottom="16dp">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="Cho phép đặt theo nhóm"
+                                    android:textSize="14sp"
+                                    android:textColor="@android:color/black" />
+                                <Switch
+                                    android:id="@+id/switch_group_booking_specific"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="true" />
+                            </LinearLayout>
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Số sinh viên tối đa mỗi slot"
+                                android:textSize="14sp"
+                                android:textColor="@android:color/black"
+                                android:layout_marginBottom="8dp" />
+                            <Spinner
+                                android:id="@+id/spinner_max_students_specific"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:background="@drawable/bg_spinner" />
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                <!-- CardView: Ghi chú -->
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="2dp">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Ghi chú"
+                                android:textStyle="bold"
+                                android:textSize="16sp"
+                                android:textColor="@android:color/black"
+                                android:layout_marginBottom="16dp" />
+                            <EditText
+                                android:id="@+id/et_notes_specific"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:minHeight="100dp"
+                                android:hint="Nhập ghi chú theo yêu cầu của bạn..."
+                                android:textSize="14sp"
+                                android:textColor="@android:color/black"
+                                android:background="@drawable/edit_text_border"
+                                android:padding="12dp"
+                                android:gravity="top"
+                                android:inputType="textMultiLine"
+                                android:scrollbars="vertical" />
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                </LinearLayout>
+
+            <!-- Fixed Schedule Container -->
+            <LinearLayout
+                android:id="@+id/fixed_schedule_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_margin="16dp">
+
+                <!-- Thêm chọn tháng cho lịch cố định -->
+                <LinearLayout
+                    android:id="@+id/month_picker_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginTop="8dp">
+
+                    <TextView
+                        android:id="@+id/tv_selected_month"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Tháng 6/2024"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/black"
+                        android:gravity="start"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="8dp" />
+
+                    <ImageButton
+                        android:id="@+id/btn_pick_month"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_calendar"
+                        android:contentDescription="Chọn tháng"
+                        android:tint="@color/colorPrimary" />
+                </LinearLayout>
+
+                <!-- Calendar Container -->
+                <LinearLayout
+                    android:id="@+id/calendar_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="16dp">
+
+                    <!-- Calendar Header -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="16dp"
+                        android:background="@android:color/white"
+                        android:layout_marginBottom="8dp">
+
+                        <ImageView
+                            android:id="@+id/btnPreviousWeek"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/ic_chevron_left"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="Tuần trước" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+
+                            <TextView
+                                android:id="@+id/tvCurrentWeekRange"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="15/01 - 21/01"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="@android:color/black" />
+
+                            <TextView
+                                android:id="@+id/tvCurrentDate"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Ngày hiện tại: 15/01"
+                                android:textSize="12sp"
+                                android:textColor="#666666" />
+
+                        </LinearLayout>
+
+                        <ImageView
+                            android:id="@+id/btnNextWeek"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/ic_chevron_right"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="Tuần sau" />
+
+                    </LinearLayout>
+
+                    <!-- Calendar Days -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:background="@android:color/white"
+                        android:padding="16dp">
+
+                        <!-- Day labels -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="8dp">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="T2"
+                                android:textSize="12sp"
+                                android:textColor="#666666"
+                                android:gravity="center" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="T3"
+                                android:textSize="12sp"
+                                android:textColor="#666666"
+                                android:gravity="center" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="T4"
+                                android:textSize="12sp"
+                                android:textColor="#666666"
+                                android:gravity="center" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="T5"
+                                android:textSize="12sp"
+                                android:textColor="#666666"
+                                android:gravity="center" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="T6"
+                                android:textSize="12sp"
+                                android:textColor="#666666"
+                                android:gravity="center" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="T7"
+                                android:textSize="12sp"
+                                android:textColor="#666666"
+                                android:gravity="center" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="CN"
+                                android:textSize="12sp"
+                                android:textColor="#666666"
+                                android:gravity="center" />
+
+                        </LinearLayout>
+
+                        <!-- Day buttons -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/tvDay0"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1"
+                                android:text="15"
+                                android:textSize="14sp"
+                                android:textColor="@android:color/black"
+                                android:gravity="center"
+                                android:background="@drawable/calendar_day_default"
+                                android:layout_margin="2dp"
+                                android:clickable="true"
+                                android:focusable="true" />
+
+                            <TextView
+                                android:id="@+id/tvDay1"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1"
+                                android:text="16"
+                                android:textSize="14sp"
+                                android:textColor="@android:color/black"
+                                android:gravity="center"
+                                android:background="@drawable/calendar_day_default"
+                                android:layout_margin="2dp"
+                                android:clickable="true"
+                                android:focusable="true" />
+
+                            <TextView
+                                android:id="@+id/tvDay2"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1"
+                                android:text="17"
+                                android:textSize="14sp"
+                                android:textColor="@android:color/black"
+                                android:gravity="center"
+                                android:background="@drawable/calendar_day_default"
+                                android:layout_margin="2dp"
+                                android:clickable="true"
+                                android:focusable="true" />
+
+                            <TextView
+                                android:id="@+id/tvDay3"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1"
+                                android:text="18"
+                                android:textSize="14sp"
+                                android:textColor="@android:color/black"
+                                android:gravity="center"
+                                android:background="@drawable/calendar_day_default"
+                                android:layout_margin="2dp"
+                                android:clickable="true"
+                                android:focusable="true" />
+
+                            <TextView
+                                android:id="@+id/tvDay4"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1"
+                                android:text="19"
+                                android:textSize="14sp"
+                                android:textColor="@android:color/black"
+                                android:gravity="center"
+                                android:background="@drawable/calendar_day_default"
+                                android:layout_margin="2dp"
+                                android:clickable="true"
+                                android:focusable="true" />
+
+                            <TextView
+                                android:id="@+id/tvDay5"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1"
+                                android:text="20"
+                                android:textSize="14sp"
+                                android:textColor="@android:color/black"
+                                android:gravity="center"
+                                android:background="@drawable/calendar_day_default"
+                                android:layout_margin="2dp"
+                                android:clickable="true"
+                                android:focusable="true" />
+
+                            <TextView
+                                android:id="@+id/tvDay6"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1"
+                                android:text="21"
+                                android:textSize="14sp"
+                                android:textColor="@android:color/black"
+                                android:gravity="center"
+                                android:background="@drawable/calendar_day_default"
+                                android:layout_margin="2dp"
+                                android:clickable="true"
+                                android:focusable="true" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Monthly Schedule Toggle -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="8dp">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Áp dụng cho cả tháng"
+                                android:textStyle="bold"
+                                android:textSize="16sp"
+                                android:textColor="@android:color/black" />
+
+                            <Switch
+                                android:id="@+id/switch_apply_monthly"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:checked="false" />
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tv_monthly_preview"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Chỉ tạo lịch cho tuần hiện tại"
+                            android:textSize="14sp"
+                            android:textColor="#666666"
+                            android:visibility="visible" />
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <!-- Individual Day Setup -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Thiết lập cho từng ngày"
+                            android:textStyle="bold"
+                            android:textSize="16sp"
+                            android:textColor="@android:color/black"
+                            android:layout_marginBottom="16dp" />
+
+                        <!-- Day 0 - Monday -->
+                        <LinearLayout
+                            android:id="@+id/day_0_container"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginBottom="16dp"
+                            android:background="@drawable/edit_text_border"
+                            android:padding="12dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginBottom="8dp">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="Thứ 2"
+                                    android:textStyle="bold"
+                                    android:textSize="14sp"
+                                    android:textColor="@android:color/black" />
+
+                                <CheckBox
+                                    android:id="@+id/cb_day_0"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                     />
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/day_0_time_slots_container"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:visibility="gone">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:layout_marginBottom="8dp">
+
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:text="Khung giờ"
+                                        android:textSize="12sp"
+                                        android:textColor="#666666" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btn_add_time_slot_day_0"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="+ Thêm"
+                                        android:textSize="12sp"
+                                        android:textColor="#1E40AF"
+                                        app:backgroundTint="@android:color/transparent" />
+
+                                </LinearLayout>
+
+                                <androidx.recyclerview.widget.RecyclerView
+                                    android:id="@+id/rv_time_slots_day_0"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:nestedScrollingEnabled="false" />
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <!-- Day 1 - Tuesday -->
+                        <LinearLayout
+                            android:id="@+id/day_1_container"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginBottom="16dp"
+                            android:background="@drawable/edit_text_border"
+                            android:padding="12dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginBottom="8dp">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="Thứ 3"
+                                    android:textStyle="bold"
+                                    android:textSize="14sp"
+                                    android:textColor="@android:color/black" />
+
+                                <CheckBox
+                                    android:id="@+id/cb_day_1"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/day_1_time_slots_container"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:visibility="gone">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:layout_marginBottom="8dp">
+
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:text="Khung giờ"
+                                        android:textSize="12sp"
+                                        android:textColor="#666666" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btn_add_time_slot_day_1"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="+ Thêm"
+                                        android:textSize="12sp"
+                                        android:textColor="#1E40AF"
+                                        app:backgroundTint="@android:color/transparent" />
+
+                                </LinearLayout>
+
+                                <androidx.recyclerview.widget.RecyclerView
+                                    android:id="@+id/rv_time_slots_day_1"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:nestedScrollingEnabled="false" />
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <!-- Day 2 - Wednesday -->
+                        <LinearLayout
+                            android:id="@+id/day_2_container"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginBottom="16dp"
+                            android:background="@drawable/edit_text_border"
+                            android:padding="12dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginBottom="8dp">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="Thứ 4"
+                                    android:textStyle="bold"
+                                    android:textSize="14sp"
+                                    android:textColor="@android:color/black" />
+
+                                <CheckBox
+                                    android:id="@+id/cb_day_2"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/day_2_time_slots_container"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:visibility="gone">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:layout_marginBottom="8dp">
+
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:text="Khung giờ"
+                                        android:textSize="12sp"
+                                        android:textColor="#666666" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btn_add_time_slot_day_2"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="+ Thêm"
+                                        android:textSize="12sp"
+                                        android:textColor="#1E40AF"
+                                        app:backgroundTint="@android:color/transparent" />
+
+                                </LinearLayout>
+
+                                <androidx.recyclerview.widget.RecyclerView
+                                    android:id="@+id/rv_time_slots_day_2"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:nestedScrollingEnabled="false" />
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <!-- Day 3 - Thursday -->
+                        <LinearLayout
+                            android:id="@+id/day_3_container"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginBottom="16dp"
+                            android:background="@drawable/edit_text_border"
+                            android:padding="12dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginBottom="8dp">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="Thứ 5"
+                                    android:textStyle="bold"
+                                    android:textSize="14sp"
+                                    android:textColor="@android:color/black" />
+
+                                <CheckBox
+                                    android:id="@+id/cb_day_3"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                 />
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/day_3_time_slots_container"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:visibility="gone">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:layout_marginBottom="8dp">
+
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:text="Khung giờ"
+                                        android:textSize="12sp"
+                                        android:textColor="#666666" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btn_add_time_slot_day_3"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="+ Thêm"
+                                        android:textSize="12sp"
+                                        android:textColor="#1E40AF"
+                                        app:backgroundTint="@android:color/transparent" />
+
+                                </LinearLayout>
+
+                                <androidx.recyclerview.widget.RecyclerView
+                                    android:id="@+id/rv_time_slots_day_3"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:nestedScrollingEnabled="false" />
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <!-- Day 4 - Friday -->
+                        <LinearLayout
+                            android:id="@+id/day_4_container"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginBottom="16dp"
+                            android:background="@drawable/edit_text_border"
+                            android:padding="12dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginBottom="8dp">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="Thứ 6"
+                                    android:textStyle="bold"
+                                    android:textSize="14sp"
+                                    android:textColor="@android:color/black" />
+
+                                <CheckBox
+                                    android:id="@+id/cb_day_4"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                />
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/day_4_time_slots_container"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:visibility="gone">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:layout_marginBottom="8dp">
+
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:text="Khung giờ"
+                                        android:textSize="12sp"
+                                        android:textColor="#666666" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btn_add_time_slot_day_4"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="+ Thêm"
+                                        android:textSize="12sp"
+                                        android:textColor="#1E40AF"
+                                        app:backgroundTint="@android:color/transparent" />
+
+                                </LinearLayout>
+
+                                <androidx.recyclerview.widget.RecyclerView
+                                    android:id="@+id/rv_time_slots_day_4"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:nestedScrollingEnabled="false" />
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <!-- Day 5 - Saturday -->
+                        <LinearLayout
+                            android:id="@+id/day_5_container"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginBottom="16dp"
+                            android:background="@drawable/edit_text_border"
+                            android:padding="12dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginBottom="8dp">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="Thứ 7"
+                                    android:textStyle="bold"
+                                    android:textSize="14sp"
+                                    android:textColor="@android:color/black" />
+
+                                <CheckBox
+                                    android:id="@+id/cb_day_5"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                 />
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/day_5_time_slots_container"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:visibility="gone">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:layout_marginBottom="8dp">
+
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:text="Khung giờ"
+                                        android:textSize="12sp"
+                                        android:textColor="#666666" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btn_add_time_slot_day_5"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="+ Thêm"
+                                        android:textSize="12sp"
+                                        android:textColor="#1E40AF"
+                                        app:backgroundTint="@android:color/transparent" />
+
+                                </LinearLayout>
+
+                                <androidx.recyclerview.widget.RecyclerView
+                                    android:id="@+id/rv_time_slots_day_5"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:nestedScrollingEnabled="false" />
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <!-- Day 6 - Sunday -->
+                        <LinearLayout
+                            android:id="@+id/day_6_container"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginBottom="16dp"
+                            android:background="@drawable/edit_text_border"
+                            android:padding="12dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginBottom="8dp">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="Chủ nhật"
+                                    android:textStyle="bold"
+                                    android:textSize="14sp"
+                                    android:textColor="@android:color/black" />
+
+                                <CheckBox
+                                    android:id="@+id/cb_day_6"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/day_6_time_slots_container"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:visibility="gone">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:layout_marginBottom="8dp">
+
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:text="Khung giờ"
+                                        android:textSize="12sp"
+                                        android:textColor="#666666" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btn_add_time_slot_day_6"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="+ Thêm"
+                                        android:textSize="12sp"
+                                        android:textColor="#1E40AF"
+                                        app:backgroundTint="@android:color/transparent" />
+
+                                </LinearLayout>
+
+                                <androidx.recyclerview.widget.RecyclerView
+                                    android:id="@+id/rv_time_slots_day_6"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:nestedScrollingEnabled="false" />
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <!-- Slot Configuration -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Cấu hình slot"
+                            android:textStyle="bold"
+                            android:textSize="16sp"
+                            android:textColor="@android:color/black"
+                            android:layout_marginBottom="16dp" />
+
+                        <!-- Slot Duration -->
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Độ dài mỗi slot"
+                            android:textSize="14sp"
+                            android:textColor="@android:color/black"
+                            android:layout_marginBottom="8dp" />
+
+                        <!-- RadioGroup cho độ dài slot -->
+                        <RadioGroup
+                            android:id="@+id/rg_slot_duration"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="16dp">
+
+                            <com.google.android.material.radiobutton.MaterialRadioButton
+                                android:id="@+id/rb_15_min"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="15 phút"
+                                android:layout_marginEnd="16dp"
+                                android:checked="false"
+                                android:textColor="@color/gray_800"
+                                app:buttonTint="@color/colorPrimary" />
+
+                            <com.google.android.material.radiobutton.MaterialRadioButton
+                                android:id="@+id/rb_20_min"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="20 phút"
+                                android:layout_marginEnd="16dp"
+                                android:checked="true"
+                                android:textColor="@color/gray_800"
+                                app:buttonTint="@color/colorPrimary" />
+
+                            <com.google.android.material.radiobutton.MaterialRadioButton
+                                android:id="@+id/rb_30_min"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="30 phút"
+                                android:checked="false"
+                                android:textColor="@color/gray_800"
+                                app:buttonTint="@color/colorPrimary" />
+                        </RadioGroup>
+
+                        <!-- Group Booking -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="16dp">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Cho phép đặt theo nhóm"
+                                android:textSize="14sp"
+                                android:textColor="@android:color/black" />
+
+                            <Switch
+                                android:id="@+id/switch_group_booking"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:checked="true" />
+
+                        </LinearLayout>
+
+                        <!-- Max Students -->
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Số sinh viên tối đa mỗi slot"
+                            android:textSize="14sp"
+                            android:textColor="@android:color/black"
+                            android:layout_marginBottom="8dp" />
+
+                        <Spinner
+                            android:id="@+id/spinner_max_students"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_spinner" />
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <!-- Notes Section -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/card_notes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Ghi chú"
+                            android:textStyle="bold"
+                            android:textSize="16sp"
+                            android:textColor="@android:color/black"
+                            android:layout_marginBottom="16dp" />
+
+                        <EditText
+                            android:id="@+id/et_notes"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:minHeight="100dp"
+                            android:hint="Nhập ghi chú theo yêu cầu của bạn..."
+                            android:textSize="14sp"
+                            android:textColor="@android:color/black"
+                            android:background="@drawable/edit_text_border"
+                            android:padding="12dp"
+                            android:gravity="top"
+                            android:inputType="textMultiLine"
+                            android:scrollbars="vertical" />
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="80dp" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <!-- ProgressBar để hiển thị trạng thái loading -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+</FrameLayout> 

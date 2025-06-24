@@ -1,12 +1,13 @@
 package com.example.tluofficehours.model;
 
 import com.google.gson.annotations.SerializedName;
+import java.io.Serializable;
 
-public class Department {
+public class Department implements Serializable {
     @SerializedName("DepartmentId")
     private String departmentId;
 
-    @SerializedName("Name")
+    @SerializedName("DepartmentName")
     private String name;
 
     public Department(String departmentId, String name) {

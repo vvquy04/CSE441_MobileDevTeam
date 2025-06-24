@@ -72,7 +72,7 @@ class User extends Authenticatable
 
     public function facultyProfile()
     {
-        return $this->hasOne(FacultyProfile::class, 'FacultyUserId', 'UserId');
+        return $this->hasOne(FacultyProfile::class, 'faculty_user_id', 'UserId');
     }
 
     public function studentProfile()
