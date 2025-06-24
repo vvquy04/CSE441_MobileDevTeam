@@ -34,6 +34,7 @@
     30 => 'Pest\\Laravel\\PestServiceProvider',
     31 => 'App\\Providers\\AppServiceProvider',
     32 => 'App\\Providers\\RouteServiceProvider',
+    33 => 'Laravel\\Sanctum\\SanctumServiceProvider',
   ),
   'eager' => 
   array (
@@ -55,6 +56,7 @@
     15 => 'Pest\\Laravel\\PestServiceProvider',
     16 => 'App\\Providers\\AppServiceProvider',
     17 => 'App\\Providers\\RouteServiceProvider',
+    18 => 'Laravel\\Sanctum\\SanctumServiceProvider',
   ),
   'deferred' => 
   array (

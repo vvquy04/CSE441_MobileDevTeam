@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('office_hour_definitions', function (Blueprint $table) {
             $table->id('DefinitionId');
-            $table->foreignId('FacultyUserId')->constrained('users', 'UserId');
+            $table->foreignId('faculty_user_id')->constrained('users', 'UserId');
             $table->integer('DayOfWeek');
             $table->time('StartTime');
             $table->time('EndTime');

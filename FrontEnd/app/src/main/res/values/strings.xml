@@ -1,3 +1,54 @@
 <resources>
     <string name="app_name">TLU Office Hours</string>
+    
+    <!-- Calendar strings -->
+    <string name="calendar_title">Quản lý lịch</string>
+    <string name="calendar_week_format">Tuần %1$d: %2$s - %3$s</string>
+    <string name="calendar_week_fallback">Tuần: %1$s - %2$s</string>
+    <string name="calendar_empty_state_title">Không có lịch hẹn nào</string>
+    <string name="calendar_empty_state_subtitle">Chọn ngày khác để xem lịch hẹn</string>
+    
+    <!-- Filter button strings -->
+    <string name="filter_all">Tất cả</string>
+    <string name="filter_pending">Chờ xác nhận</string>
+    <string name="filter_confirmed">Đã xác nhận</string>
+    <string name="filter_completed">Đã hoàn thành</string>
+    <string name="filter_rejected_cancelled">Đã từ chối/hủy</string>
+    
+    <!-- Day of week strings -->
+    <string name="day_monday">T2</string>
+    <string name="day_tuesday">T3</string>
+    <string name="day_wednesday">T4</string>
+    <string name="day_thursday">T5</string>
+    <string name="day_friday">T6</string>
+    <string name="day_saturday">T7</string>
+    <string name="day_sunday">CN</string>
+    
+    <!-- Action button strings -->
+    <string name="action_detail">Chi tiết</string>
+    <string name="action_approve">Xác nhận</string>
+    <string name="action_reject">Từ chối</string>
+    <string name="action_cancel">Hủy</string>
+    <string name="action_complete">Hoàn thành</string>
+    
+    <!-- Status strings -->
+    <string name="status_pending">Chờ xác nhận</string>
+    <string name="status_confirmed">Đã xác nhận</string>
+    <string name="status_completed">Đã hoàn thành</string>
+    <string name="status_cancelled">Đã hủy</string>
+    <string name="status_rejected">Đã từ chối</string>
+    
+    <!-- Dialog strings -->
+    <string name="dialog_reason_title">Lý do %1$s</string>
+    <string name="dialog_reason_hint">Nhập lý do...</string>
+    <string name="dialog_confirm">Xác nhận</string>
+    <string name="dialog_cancel">Hủy</string>
+    <string name="dialog_reason_empty">Vui lòng nhập lý do</string>
+    
+    <!-- Success messages -->
+    <string name="success_booking_approved">Đã xác nhận lịch hẹn thành công!</string>
+    <string name="success_booking_rejected">Đã từ chối lịch hẹn thành công!</string>
+    <string name="success_booking_cancelled">Đã hủy lịch hẹn thành công!</string>
+    <string name="success_booking_completed">Đã đánh dấu hoàn thành!</string>
+    <string name="success_navigate_to_detail">Chuyển đến chi tiết lịch hẹn</string>
 </resources>

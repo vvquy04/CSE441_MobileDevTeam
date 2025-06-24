@@ -41,7 +41,7 @@ class Booking extends Model
             'SlotId',
             'UserId',
             'SlotId',
-            'FacultyUserId'
+            'faculty_user_id'
         );
     }
 } 
