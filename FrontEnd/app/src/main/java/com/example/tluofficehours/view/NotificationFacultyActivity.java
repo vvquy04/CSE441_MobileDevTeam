@@ -70,48 +70,48 @@ public class NotificationFacultyActivity extends AppCompatActivity {
         List<Notification> notifications = new ArrayList<>();
         
         notifications.add(new Notification(
-            "1",
+            1L,
             "Lịch hẹn mới từ sinh viên",
             "Sinh viên Nguyễn Văn A đã đặt lịch hẹn với bạn vào ngày mai lúc 10:00. Vui lòng xác nhận hoặc từ chối.",
-            "23/5/2025",
-            "14:30",
-            "booking"
+            "booking",
+            false,
+            "2025-05-23T14:30:00Z"
         ));
         
         notifications.add(new Notification(
-            "2",
+            2L,
             "Nhắc nhở lịch hẹn sắp tới",
             "Bạn có lịch hẹn với sinh viên Trần Thị B trong 30 phút nữa. Vui lòng chuẩn bị.",
-            "23/5/2025",
-            "12:00",
-            "reminder"
+            "reminder",
+            false,
+            "2025-05-23T12:00:00Z"
         ));
         
         notifications.add(new Notification(
-            "3",
+            3L,
             "Lịch hẹn bị hủy",
             "Sinh viên Lê Văn C đã hủy lịch hẹn vào ngày 25/5/2025. Lịch trống đã được cập nhật.",
-            "22/5/2025",
-            "16:45",
-            "cancellation"
+            "cancellation",
+            false,
+            "2025-05-22T16:45:00Z"
         ));
         
         notifications.add(new Notification(
-            "4",
+            4L,
             "Cập nhật lịch làm việc",
             "Hệ thống đã cập nhật lịch làm việc của bạn. Vui lòng kiểm tra lại thông tin.",
-            "21/5/2025",
-            "09:15",
-            "system"
+            "system",
+            false,
+            "2025-05-21T09:15:00Z"
         ));
         
         notifications.add(new Notification(
-            "5",
+            5L,
             "Sinh viên đã xác nhận lịch hẹn",
             "Sinh viên Phạm Thị D đã xác nhận lịch hẹn vào ngày 26/5/2025 lúc 14:00.",
-            "20/5/2025",
-            "15:20",
-            "confirmation"
+            "confirmation",
+            false,
+            "2025-05-20T15:20:00Z"
         ));
         
         adapter.setNotifications(notifications);

@@ -235,11 +235,23 @@ public class StudentMainActivity extends AppCompatActivity implements TeacherAda
         teacherViewModel.getFeaturedTeachers().observe(this, teachers -> {
             android.util.Log.d("StudentMainActivity", "Featured teachers loaded: " + (teachers != null ? teachers.size() : "null"));
             if (teachers != null) {
+                // Nếu không có search, hiển thị featured teachers
+                if (isSearchEmpty()) {
+                    teacherAdapter.updateTeachers(teachers);
+                    currentDot = 0;
+                    updatePaginationDots(teachers.size());
+                }
+            } else {
+                updatePaginationDots(0);
+            }
+        });
+        // Observe teachers list (kết quả tìm kiếm)
+        teacherViewModel.getTeachers().observe(this, teachers -> {
+            android.util.Log.d("StudentMainActivity", "Search teachers loaded: " + (teachers != null ? teachers.size() : "null"));
+            if (teachers != null && !isSearchEmpty()) {
                 teacherAdapter.updateTeachers(teachers);
                 currentDot = 0;
                 updatePaginationDots(teachers.size());
-            } else {
-                updatePaginationDots(0);
             }
         });
         teacherViewModel.getDepartments().observe(this, departments -> {
@@ -302,5 +314,11 @@ public class StudentMainActivity extends AppCompatActivity implements TeacherAda
             }
         }
         return null;
+    }
+
+    // Hàm kiểm tra ô tìm kiếm có rỗng không
+    private boolean isSearchEmpty() {
+        EditText searchEditText = findViewById(R.id.searchEditText);
+        return searchEditText.getText().toString().trim().isEmpty();
     }
 }

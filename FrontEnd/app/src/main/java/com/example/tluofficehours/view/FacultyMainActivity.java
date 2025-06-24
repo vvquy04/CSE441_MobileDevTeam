@@ -27,11 +27,11 @@ import com.example.tluofficehours.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.example.tluofficehours.viewmodel.FacultyMainViewModel;
-import com.example.tluofficehours.view.FacultyCalendarAdapter;
+import com.example.tluofficehours.adapter.FacultyCalendarAdapter;
 
 public class FacultyMainActivity extends AppCompatActivity {
 // HEAD
-    
+
     private static final String TAG = "FacultyMainActivity";
     private BottomNavigationView bottomNavigationView;
     private ImageView notificationIcon;
@@ -42,14 +42,20 @@ public class FacultyMainActivity extends AppCompatActivity {
     private FacultyCalendarAdapter appointmentAdapter;
     private TextView tvNoUpcomingAppointments;
 
-//
+    //
 // vanquy_refactor
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_faculty_main);
-// HEAD
-        
+
+        // Đảm bảo luôn set lại token cho RetrofitClient khi vào màn faculty
+        com.example.tluofficehours.utils.SharedPrefsManager sharedPrefsManager = com.example.tluofficehours.utils.SharedPrefsManager.getInstance(this);
+        String token = sharedPrefsManager.getAuthToken();
+        if (token != null && !token.isEmpty()) {
+            com.example.tluofficehours.api.RetrofitClient.setAuthToken(token);
+        }
+
         Log.d(TAG, "onCreate: Setting up FacultyMainActivity");
         initViews();
         setupNavigation();
@@ -71,13 +77,13 @@ public class FacultyMainActivity extends AppCompatActivity {
         tvNoUpcomingAppointments.setTextColor(getResources().getColor(R.color.light_blue_200));
         tvNoUpcomingAppointments.setGravity(Gravity.CENTER);
         tvNoUpcomingAppointments.setVisibility(View.GONE);
-        
+
         if (bottomNavigationView != null) {
             Log.d(TAG, "initViews: BottomNavigationView found");
         } else {
             Log.e(TAG, "initViews: BottomNavigationView is null!");
         }
-        
+
         if (notificationIcon != null) {
             Log.d(TAG, "initViews: Notification icon found");
         } else {
@@ -200,7 +206,7 @@ public class FacultyMainActivity extends AppCompatActivity {
     private boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
         Log.d(TAG, "onNavigationItemSelected: Item clicked with ID: " + itemId);
-        
+
         if (itemId == R.id.navigation_home) {
             Log.d(TAG, "onNavigationItemSelected: Home selected");
             // Already on home
@@ -232,15 +238,3 @@ public class FacultyMainActivity extends AppCompatActivity {
         }
     }
 }
-//
-
-        Toast.makeText(this, "Chào mừng giảng viên!", Toast.LENGTH_SHORT).show();
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-    }
-} 
-// vanquy_refactor

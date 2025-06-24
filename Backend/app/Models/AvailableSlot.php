@@ -15,8 +15,6 @@ class AvailableSlot extends Model
 
     protected $primaryKey = 'SlotId';
     
-//
-    protected $primaryKey = 'SlotId';
 // vanquy_refactor
     protected $fillable = [
         'faculty_user_id',
@@ -26,8 +24,7 @@ class AvailableSlot extends Model
         'IsAvailable',
 // HEAD
         'DefinitionId'
-//
-        'DefinitionId',
+
 // vanquy_refactor
     ];
 
@@ -36,8 +33,6 @@ class AvailableSlot extends Model
         'EndTime' => 'datetime',
 // HEAD
         'IsAvailable' => 'boolean'
-//
-        'IsAvailable' => 'boolean',
 // vanquy_refactor
     ];
 

@@ -7,7 +7,7 @@ public class Department implements Serializable {
     @SerializedName("DepartmentId")
     private String departmentId;
 
-    @SerializedName("DepartmentName")
+    @SerializedName("Name")
     private String name;
 
     public Department(String departmentId, String name) {

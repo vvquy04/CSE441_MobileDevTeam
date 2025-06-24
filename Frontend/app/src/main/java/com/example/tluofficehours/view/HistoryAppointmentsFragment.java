@@ -72,9 +72,14 @@ public class HistoryAppointmentsFragment extends Fragment {
                 intent.putExtra("purpose", appointment.getPurpose());
                 intent.putExtra("room", appointment.getRoom());
                 intent.putExtra("appointmentId", appointment.getId());
+                intent.putExtra("status", appointment.getStatus());
+                intent.putExtra("cancellationReason", appointment.getCancellationReason());
+                intent.putExtra("facultyUserId", appointment.getFacultyUserId());
+                intent.putExtra("avatarUrl", appointment.getAvatarUrl());
                 startActivity(intent);
             }
         });
+        adapter.setDisplayMode("history");
         recyclerView.setAdapter(adapter);
         
         // Thay thế layout cũ bằng RecyclerView và empty state
@@ -99,7 +104,8 @@ public class HistoryAppointmentsFragment extends Fragment {
                 List<Appointment> history = new ArrayList<>();
                 for (Appointment appt : allAppointments) {
                     Log.d(TAG, "Appointment: " + appt.getTeacherName() + " - Status: " + appt.getStatus());
-                    if ("COMPLETED".equals(appt.getStatus()) || "CANCELLED".equals(appt.getStatus())) {
+                    String status = appt.getStatus();
+                    if ("completed".equalsIgnoreCase(status) || "cancelled".equalsIgnoreCase(status) || "rejected".equalsIgnoreCase(status)) {
                         history.add(appt);
                     }
                 }

@@ -39,21 +39,12 @@
             android:name=".view.ProfileFacultyActivity"
             android:exported="false" />
         <activity
-            android:name=".NotificationActivity"
-            android:exported="false" />
-        <activity
-// HEAD
             android:name=".view.NotificationFacultyActivity"
             android:exported="false" />
         <activity
-            android:name=".TeachListActivity"
-//
             android:name=".view.TeachListActivity"
-// vanquy_refactor
             android:exported="false" />
-        <activity
-            android:name=".view.FacultyMainActivity"
-            android:exported="false" />
+        <activity android:name=".view.FacultyMainActivity" />
         <activity
             android:name=".view.FacultyCalendarActivity"
             android:exported="false" />

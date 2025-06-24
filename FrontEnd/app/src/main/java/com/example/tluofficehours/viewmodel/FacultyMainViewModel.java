@@ -13,7 +13,7 @@ import com.example.tluofficehours.model.Booking;
 import com.example.tluofficehours.model.AvailableSlot;
 import com.example.tluofficehours.model.User;
 import com.example.tluofficehours.repository.FacultyRepository;
-import com.example.tluofficehours.api.FacultyApiService;
+import com.example.tluofficehours.api.ApiService;
 import com.google.gson.Gson;
 
 import java.util.Calendar;
@@ -23,7 +23,7 @@ import java.util.List;
 
 public class FacultyMainViewModel extends AndroidViewModel {
     private FacultyRepository repository;
-    private MutableLiveData<FacultyApiService.DashboardResponse> dashboardData = new MutableLiveData<>();
+    private MutableLiveData<ApiService.DashboardResponse> dashboardData = new MutableLiveData<>();
     private MutableLiveData<List<Booking>> recentBookings = new MutableLiveData<>();
     private MutableLiveData<List<AvailableSlot>> upcomingSlots = new MutableLiveData<>();
     private MutableLiveData<User> userProfile = new MutableLiveData<>();
@@ -34,11 +34,11 @@ public class FacultyMainViewModel extends AndroidViewModel {
 
     public FacultyMainViewModel(@NonNull Application application) {
         super(application);
-        repository = new FacultyRepository(application.getApplicationContext());
+        repository = new FacultyRepository();
     }
 
     // LiveData getters
-    public LiveData<FacultyApiService.DashboardResponse> getDashboardData() { return dashboardData; }
+    public LiveData<ApiService.DashboardResponse> getDashboardData() { return dashboardData; }
     public LiveData<List<Booking>> getRecentBookings() { return recentBookings; }
     public LiveData<List<AvailableSlot>> getUpcomingSlots() { return upcomingSlots; }
     public LiveData<User> getUserProfile() { return userProfile; }
@@ -50,101 +50,50 @@ public class FacultyMainViewModel extends AndroidViewModel {
     // Load dashboard data
     public void loadDashboardData() {
         isLoading.setValue(true);
-        repository.getDashboardData(new FacultyRepository.FacultyApiCallback<FacultyApiService.DashboardResponse>() {
-            @Override
-            public void onSuccess(FacultyApiService.DashboardResponse result) {
-                dashboardData.setValue(result);
-                if (result.recentBookings != null) {
-                    recentBookings.setValue(result.recentBookings);
-                }
+        repository.getDashboardData().observeForever(result -> {
+            dashboardData.setValue(result);
+            if (result != null && result.recentBookings != null) {
+                recentBookings.setValue(result.recentBookings);
+            }
+            if (result != null) {
                 upcomingSlots.setValue(result.upcomingSlots);
-                isLoading.setValue(false);
             }
-
-            @Override
-            public void onError(String message) {
-                errorMessage.setValue(message);
-                isLoading.setValue(false);
-            }
+            isLoading.setValue(false);
         });
     }
 
     // Load user profile
     public void loadUserProfile() {
-        repository.getProfile(new FacultyRepository.FacultyApiCallback<User>() {
-            @Override
-            public void onSuccess(User result) {
-                userProfile.setValue(result);
-            }
-
-            @Override
-            public void onError(String message) {
-                errorMessage.setValue(message);
-            }
+        repository.getProfile().observeForever(result -> {
+            userProfile.setValue(result);
         });
     }
 
     // Approve booking
     public void approveBooking(int bookingId) {
-        repository.approveBooking(bookingId, new FacultyRepository.FacultyApiCallback<Booking>() {
-            @Override
-            public void onSuccess(Booking result) {
-                // Reload dashboard data after approval
-                loadDashboardData();
-            }
-
-            @Override
-            public void onError(String message) {
-                errorMessage.setValue(message);
-            }
+        repository.approveBooking(bookingId).observeForever(result -> {
+            loadDashboardData();
         });
     }
 
     // Reject booking
     public void rejectBooking(int bookingId, String reason) {
-        repository.rejectBooking(bookingId, reason, new FacultyRepository.FacultyApiCallback<Booking>() {
-            @Override
-            public void onSuccess(Booking result) {
-                // Reload dashboard data after rejection
-                loadDashboardData();
-            }
-
-            @Override
-            public void onError(String message) {
-                errorMessage.setValue(message);
-            }
+        repository.rejectBooking(bookingId, reason).observeForever(result -> {
+            loadDashboardData();
         });
     }
 
     // Cancel booking
     public void cancelBooking(int bookingId, String reason) {
-        repository.cancelBooking(bookingId, reason, new FacultyRepository.FacultyApiCallback<Booking>() {
-            @Override
-            public void onSuccess(Booking result) {
-                // Reload dashboard data after cancellation
-                loadDashboardData();
-            }
-
-            @Override
-            public void onError(String message) {
-                errorMessage.setValue(message);
-            }
+        repository.cancelBooking(bookingId, reason).observeForever(result -> {
+            loadDashboardData();
         });
     }
 
     // Mark booking as completed
     public void markBookingCompleted(int bookingId) {
-        repository.markBookingCompleted(bookingId, new FacultyRepository.FacultyApiCallback<Booking>() {
-            @Override
-            public void onSuccess(Booking result) {
-                // Reload dashboard data after completion
-                loadDashboardData();
-            }
-
-            @Override
-            public void onError(String message) {
-                errorMessage.setValue(message);
-            }
+        repository.markBookingCompleted(bookingId).observeForever(result -> {
+            loadDashboardData();
         });
     }
 
@@ -155,7 +104,7 @@ public class FacultyMainViewModel extends AndroidViewModel {
 
     // Get formatted statistics
     public String getAvailableSlotsText() {
-        FacultyApiService.DashboardResponse data = dashboardData.getValue();
+        ApiService.DashboardResponse data = dashboardData.getValue();
         if (data != null) {
             return data.availableSlots + " Slot";
         }
@@ -163,7 +112,7 @@ public class FacultyMainViewModel extends AndroidViewModel {
     }
 
     public String getBookingsCountText() {
-        FacultyApiService.DashboardResponse data = dashboardData.getValue();
+        ApiService.DashboardResponse data = dashboardData.getValue();
         if (data != null) {
             return data.pendingBookings + " Sinh viên đã đặt lịch";
         }
@@ -172,8 +121,8 @@ public class FacultyMainViewModel extends AndroidViewModel {
 
     public String getUserDisplayName() {
         User user = userProfile.getValue();
-        if (user != null && user.getFacultyProfile() != null) {
-            return user.getFacultyProfile().getFacultyName();
+        if (user != null) {
+            return user.getEmail();
         }
         return "Thầy / Cô";
     }
@@ -185,44 +134,21 @@ public class FacultyMainViewModel extends AndroidViewModel {
         cal.add(Calendar.DATE, 6);
         Date end = cal.getTime();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault());
-        repository.getBookingsByWeek(
-            sdf.format(start), sdf.format(end), null,
-            new FacultyRepository.FacultyApiCallback<FacultyApiService.BookingsByWeekResponse>() {
-                @Override
-                public void onSuccess(FacultyApiService.BookingsByWeekResponse result) {
-                    recentBookings.setValue(result.allBookings);
-                }
-                @Override
-                public void onError(String message) {
-                    errorMessage.setValue(message);
-                }
+        repository.getBookingsByWeek(sdf.format(start), sdf.format(end), null).observeForever(result -> {
+            if (result != null) {
+                recentBookings.setValue(result);
             }
-        );
+        });
     }
 
     public void loadTodayBookings() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault());
         String today = sdf.format(new Date());
-        repository.getBookingsByDate(today, null, new FacultyRepository.FacultyApiCallback<FacultyApiService.BookingsByDateResponse>() {
-            @Override
-            public void onSuccess(FacultyApiService.BookingsByDateResponse result) {
-                Log.d("TODAY_BOOKINGS", new Gson().toJson(result.bookings));
-                if (result != null && result.bookings != null) {
-                    todayBookingCount.setValue(result.bookings.size());
-                    int availableSlots = 0;
-                    for (Booking booking : result.bookings) {
-                        if (booking.getSlot() != null && booking.getSlot().getAvailableSpots() > 0) {
-                            availableSlots++;
-                        }
-                    }
-                    todayAvailableSlotCount.setValue(availableSlots);
-                } else {
-                    todayBookingCount.setValue(0);
-                    todayAvailableSlotCount.setValue(0);
-                }
-            }
-            @Override
-            public void onError(String message) {
+        repository.getBookingsByDate(today, null).observeForever(result -> {
+            if (result != null) {
+                todayBookingCount.setValue(result.size());
+                todayAvailableSlotCount.setValue(0); // TODO: Tính số slot khả dụng nếu cần
+            } else {
                 todayBookingCount.setValue(0);
                 todayAvailableSlotCount.setValue(0);
             }

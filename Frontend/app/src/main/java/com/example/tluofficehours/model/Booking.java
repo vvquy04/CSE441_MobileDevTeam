@@ -1,8 +1,9 @@
 package com.example.tluofficehours.model;
 
 import com.google.gson.annotations.SerializedName;
+import java.io.Serializable;
 
-public class Booking {
+public class Booking implements Serializable {
     @SerializedName("BookingId")
     private String bookingId;
     
@@ -33,6 +34,18 @@ public class Booking {
     @SerializedName("updated_at")
     private String updatedAt;
     
+    @SerializedName("booking_date")
+    private String bookingDate;
+    
+    @SerializedName("booking_time_range")
+    private String bookingTimeRange;
+    
+    @SerializedName("student")
+    private Student student;
+    
+    @SerializedName("slot")
+    private Slot slot;
+    
     // Getters
     public String getBookingId() { return bookingId; }
     public String getSlotId() { return slotId; }
@@ -44,6 +57,10 @@ public class Booking {
     public String getCancellationReason() { return cancellationReason; }
     public String getCreatedAt() { return createdAt; }
     public String getUpdatedAt() { return updatedAt; }
+    public String getBookingDate() { return bookingDate; }
+    public String getBookingTimeRange() { return bookingTimeRange; }
+    public Student getStudent() { return student; }
+    public Slot getSlot() { return slot; }
     
     // Setters
     public void setBookingId(String bookingId) { this.bookingId = bookingId; }
@@ -56,4 +73,8 @@ public class Booking {
     public void setCancellationReason(String cancellationReason) { this.cancellationReason = cancellationReason; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
     public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
-} 
+    public void setBookingDate(String bookingDate) { this.bookingDate = bookingDate; }
+    public void setBookingTimeRange(String bookingTimeRange) { this.bookingTimeRange = bookingTimeRange; }
+    public void setStudent(Student student) { this.student = student; }
+    public void setSlot(Slot slot) { this.slot = slot; }
+}

@@ -16,7 +16,6 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
 import com.example.tluofficehours.R;
-import com.example.tluofficehours.model.FacultyProfile;
 import com.example.tluofficehours.viewmodel.TeacherViewModel;
 
 public class FacultyDetailActivity extends AppCompatActivity {
@@ -80,8 +79,8 @@ public class FacultyDetailActivity extends AppCompatActivity {
         if (avatar != null && !avatar.isEmpty()) {
             Glide.with(this)
                 .load(avatar)
-                .placeholder(R.drawable.teacher_placeholder)
-                .error(R.drawable.teacher_placeholder)
+                .placeholder(R.drawable.teacher_placeholder_img)
+                .error(R.drawable.teacher_placeholder_img)
                 .into(teacherBackgroundImageView);
         }
 
@@ -130,11 +129,15 @@ public class FacultyDetailActivity extends AppCompatActivity {
                 detailEmail.setText(teacher.getEmail() != null ? teacher.getEmail() : "");
                 detailOffice.setText(teacher.getOfficeLocation() != null ? teacher.getOfficeLocation() : "");
                 
-                if (teacher.getAvatar() != null && !teacher.getAvatar().isEmpty()) {
+                String avatarUrl = teacher.getAvatarUrl();
+                if (avatarUrl == null || avatarUrl.isEmpty()) {
+                    avatarUrl = teacher.getAvatar();
+                }
+                if (avatarUrl != null && !avatarUrl.isEmpty()) {
                     Glide.with(this)
-                        .load(teacher.getAvatar())
-                        .placeholder(R.drawable.teacher_placeholder)
-                        .error(R.drawable.teacher_placeholder)
+                        .load(avatarUrl)
+                        .placeholder(R.drawable.teacher_placeholder_img)
+                        .error(R.drawable.teacher_placeholder_img)
                         .into(teacherBackgroundImageView);
                 }
             } else {

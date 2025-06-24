@@ -103,16 +103,16 @@ public class TeacherAdapter extends RecyclerView.Adapter<TeacherAdapter.TeacherV
             teacherDepartment.setText(departmentText);
 
             // Load teacher image
-            if (teacher.getAvatar() != null && !teacher.getAvatar().isEmpty()) {
-                android.util.Log.d("TeacherAdapter", "Loading teacher avatar: " + teacher.getAvatar());
+            if (teacher.getAvatarUrl() != null && !teacher.getAvatarUrl().isEmpty()) {
+                android.util.Log.d("TeacherAdapter", "Loading teacher avatar: " + teacher.getAvatarUrl());
                 Glide.with(context)
-                    .load(teacher.getAvatar())
-                    .placeholder(R.drawable.teacher_placeholder)
-                    .error(R.drawable.teacher_placeholder)
+                    .load(teacher.getAvatarUrl())
+                    .placeholder(R.drawable.teacher_placeholder_img)
+                    .error(R.drawable.teacher_placeholder_img)
                     .into(teacherImage);
             } else {
                 android.util.Log.w("TeacherAdapter", "Teacher avatar URL is null or empty");
-                teacherImage.setImageResource(R.drawable.teacher_placeholder);
+                teacherImage.setImageResource(R.drawable.teacher_placeholder_img);
             }
         }
     }

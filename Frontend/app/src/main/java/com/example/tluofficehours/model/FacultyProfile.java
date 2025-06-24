@@ -36,6 +36,9 @@ public class FacultyProfile {
     @SerializedName("updated_at")
     private String updatedAt;
     
+    @SerializedName("avatar_url")
+    private String avatarUrl;
+    
     // Getters
     public String getFacultyUserId() { return facultyUserId; }
     public String getFacultyName() { return facultyName; }
@@ -48,6 +51,7 @@ public class FacultyProfile {
     public String getEmail() { return email; }
     public String getCreatedAt() { return createdAt; }
     public String getUpdatedAt() { return updatedAt; }
+    public String getAvatarUrl() { return avatarUrl; }
     
     // Setters
     public void setFacultyUserId(String facultyUserId) { this.facultyUserId = facultyUserId; }
@@ -61,4 +65,5 @@ public class FacultyProfile {
     public void setEmail(String email) { this.email = email; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
     public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
 } 

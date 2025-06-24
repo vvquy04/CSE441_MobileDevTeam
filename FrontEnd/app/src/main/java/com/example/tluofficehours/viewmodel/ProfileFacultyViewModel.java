@@ -5,10 +5,16 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import android.content.Context;
+import android.net.Uri;
 
 import com.example.tluofficehours.model.FacultyProfile;
 import com.example.tluofficehours.model.User;
+import com.example.tluofficehours.model.UserProfile;
 import com.example.tluofficehours.repository.FacultyRepository;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ProfileFacultyViewModel extends AndroidViewModel {
     
@@ -21,7 +27,7 @@ public class ProfileFacultyViewModel extends AndroidViewModel {
 
     public ProfileFacultyViewModel(@NonNull Application application) {
         super(application);
-        repository = new FacultyRepository(application.getApplicationContext());
+        repository = new FacultyRepository();
     }
 
     public LiveData<FacultyProfile> getFacultyProfile() {
@@ -46,32 +52,28 @@ public class ProfileFacultyViewModel extends AndroidViewModel {
 
     public void loadFacultyProfile() {
         isLoading.setValue(true);
-        repository.getProfile(new FacultyRepository.FacultyApiCallback<User>() {
-            @Override
-            public void onSuccess(User user) {
-                if (user != null && user.getFacultyProfile() != null) {
-                    facultyProfile.postValue(user.getFacultyProfile());
-                    email.postValue(user.getEmail());
-                } else {
-                    errorMessage.postValue("Không tìm thấy thông tin giảng viên");
-                }
-                isLoading.postValue(false);
-            }
-            @Override
-            public void onError(String message) {
-                errorMessage.postValue(message);
-                isLoading.postValue(false);
+        repository.getFacultyProfile().observeForever(profile -> {
+            isLoading.setValue(false);
+            if (profile != null) {
+                facultyProfile.setValue(profile);
+            } else {
+                errorMessage.setValue("Không thể tải thông tin giảng viên");
             }
         });
     }
 
-    public void updateFacultyProfile(FacultyProfile profile) {
+    public void updateFacultyProfile(Context context, String facultyName, String departmentId, String degree, String phoneNumber, String officeLocation, Uri avatarUri) {
         isLoading.setValue(true);
-        // TODO: Update faculty profile via API
-        // For now, just update local data
-        facultyProfile.setValue(profile);
-        successMessage.setValue("Cập nhật thông tin thành công");
-        isLoading.setValue(false);
+        repository.updateFacultyProfile(facultyName, departmentId, degree, phoneNumber, officeLocation, avatarUri, context)
+            .observeForever(success -> {
+                isLoading.setValue(false);
+                if (success != null && success) {
+                    successMessage.setValue("Cập nhật thông tin thành công!");
+                    loadFacultyProfile();
+                } else {
+                    errorMessage.setValue("Cập nhật thất bại!");
+                }
+            });
     }
 
     public void clearErrorMessage() {

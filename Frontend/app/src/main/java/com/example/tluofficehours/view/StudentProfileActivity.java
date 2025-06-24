@@ -45,6 +45,7 @@ public class StudentProfileActivity extends AppCompatActivity {
     private Button updateButton;
     private ImageView logoutIcon;
     private BottomNavigationView bottomNavigationView;
+    private TextView usernameTextView;
     
     // Image picker
     private Uri selectedImageUri;
@@ -115,6 +116,7 @@ public class StudentProfileActivity extends AppCompatActivity {
         updateButton = findViewById(R.id.updateButton);
         logoutIcon = findViewById(R.id.topRightIcon);
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
+        usernameTextView = findViewById(R.id.userNameTextView);
     }
     
     private void observeViewModel() {
@@ -175,6 +177,13 @@ public class StudentProfileActivity extends AppCompatActivity {
         
         // Set user role
         userRoleTextView.setText("Sinh viên");
+        
+        // Set student name vào usernameTextView
+        if (usernameTextView != null && studentProfile.getProfile() != null) {
+            String studentName = studentProfile.getProfile().getStudentName();
+            if (studentName == null) studentName = "Chưa cập nhật";
+            usernameTextView.setText(studentName);
+        }
         
         // Update student UI
         com.example.tluofficehours.model.StudentProfile.Profile profile = studentProfile.getProfile();

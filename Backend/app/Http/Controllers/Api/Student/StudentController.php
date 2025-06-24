@@ -10,9 +10,17 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use App\Models\Booking;
 use App\Models\AvailableSlot;
+use App\Services\NotificationService;
 
 class StudentController extends Controller
 {
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     public function getUserProfile(Request $request)
     {
         Log::info('getUserProfile called');
@@ -190,15 +198,27 @@ class StudentController extends Controller
 
         $request->validate([
             'SlotId' => 'required|exists:available_slots,SlotId',
-            'Purpose' => 'nullable|string|max:500'
+            'Purpose' => 'nullable|string|max:500',
+            'MemberCount' => 'nullable|integer|min:1'
         ]);
+
+        $memberCount = $request->input('MemberCount', 1);
 
         $slot = AvailableSlot::find($request->SlotId);
         if (!$slot->IsAvailable) {
             return response()->json(['message' => 'Slot is not available'], 400);
         }
 
-        // Kiểm tra đã có booking cho slot này chưa
+        // Đếm số booking đã có cho slot này (pending/confirmed)
+        $currentCount = \App\Models\Booking::where('SlotId', $slot->SlotId)
+            ->whereIn('Status', ['pending', 'confirmed'])
+            ->count();
+
+        if ($currentCount + $memberCount > $slot->MaxStudents) {
+            return response()->json(['message' => 'Số lượng sinh viên vượt quá giới hạn cho slot này!'], 400);
+        }
+
+        // Kiểm tra đã có booking cho slot này chưa (nếu muốn mỗi sinh viên chỉ đặt 1 lần)
         $existing = Booking::where('SlotId', $slot->SlotId)
             ->where('StudentUserId', $user->UserId)
             ->first();
@@ -212,7 +232,7 @@ class StudentController extends Controller
             'StudentUserId' => $user->UserId,
             'BookingTime' => now(),
             'Purpose' => $request->Purpose,
-            'Status' => 'booked'
+            'Status' => 'pending'
         ]);
 
         // Nếu slot chỉ cho 1 người, set IsAvailable = false
@@ -220,6 +240,9 @@ class StudentController extends Controller
             $slot->IsAvailable = false;
             $slot->save();
         }
+
+        // Notify faculty
+        $this->notificationService->notifyOnBookingCreation($booking);
 
         return response()->json(['message' => 'Booking successful', 'booking' => $booking]);
     }
@@ -258,6 +281,12 @@ class StudentController extends Controller
                 }
             }
             
+            // Lấy avatar URL nếu có
+            $avatarUrl = null;
+            if ($facultyProfile && $facultyProfile->avatar) {
+                $avatarUrl = asset('storage/' . $facultyProfile->avatar);
+            }
+            
             $appointment = [
                 'id' => $booking->BookingId,
                 'teacherName' => $teacherName,
@@ -266,9 +295,10 @@ class StudentController extends Controller
                 'date' => $booking->slot ? date('d/m/Y', strtotime($booking->slot->StartTime)) : '',
                 'room' => $facultyProfile ? ($facultyProfile->office_location ?? '') : '',
                 'purpose' => $booking->Purpose ?? 'Không có mục đích',
-                'status' => strtoupper($booking->Status ?? 'PENDING') === 'BOOKED' ? 'CONFIRMED' : strtoupper($booking->Status ?? 'PENDING'),
+                'status' => strtolower($booking->Status ?? 'pending'),
                 'cancellationReason' => $booking->CancellationReason ?? '',
                 'faculty_user_id' => $faculty ? $faculty->UserId : null,
+                'avatarUrl' => $avatarUrl,
             ];
             
             Log::info('Processed appointment', $appointment);
@@ -301,6 +331,9 @@ class StudentController extends Controller
         $booking->CancellationTime = now();
         $booking->save();
 
+        // Notify faculty
+        $this->notificationService->notifyOnBookingCancellation($booking);
+
         return response()->json(['message' => 'Đã hủy lịch thành công!']);
     }
-} 
+}

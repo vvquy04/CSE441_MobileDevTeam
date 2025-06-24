@@ -1,58 +1,34 @@
 package com.example.tluofficehours.model;
 
 import com.google.gson.annotations.SerializedName;
-import java.io.Serializable;
 
-public class User implements Serializable {
+public class User {
     @SerializedName("UserId")
-    private int userId;
+    private String userId;
     
     @SerializedName("email")
     private String email;
     
-    @SerializedName("faculty_profile")
-    private FacultyProfile facultyProfile;
+    @SerializedName("email_verified_at")
+    private String emailVerifiedAt;
     
-    @SerializedName("student_profile")
-    private StudentProfile studentProfile;
-
-    // Constructors
-    public User() {}
+    @SerializedName("created_at")
+    private String createdAt;
     
-    public User(int userId, String email) {
-        this.userId = userId;
-        this.email = email;
-    }
-
-    // Getters and Setters
-    public int getUserId() { return userId; }
-    public void setUserId(int userId) { this.userId = userId; }
+    @SerializedName("updated_at")
+    private String updatedAt;
     
+    // Getters
+    public String getUserId() { return userId; }
     public String getEmail() { return email; }
+    public String getEmailVerifiedAt() { return emailVerifiedAt; }
+    public String getCreatedAt() { return createdAt; }
+    public String getUpdatedAt() { return updatedAt; }
+    
+    // Setters
+    public void setUserId(String userId) { this.userId = userId; }
     public void setEmail(String email) { this.email = email; }
-    
-    public FacultyProfile getFacultyProfile() { return facultyProfile; }
-    public void setFacultyProfile(FacultyProfile facultyProfile) { this.facultyProfile = facultyProfile; }
-    
-    public StudentProfile getStudentProfile() { return studentProfile; }
-    public void setStudentProfile(StudentProfile studentProfile) { this.studentProfile = studentProfile; }
-    
-    // Helper methods
-    public String getDisplayName() {
-        if (facultyProfile != null) {
-            return facultyProfile.getFacultyName();
-        } else if (studentProfile != null) {
-            return studentProfile.getStudentName();
-        }
-        return email;
-    }
-    
-    public String getAvatar() {
-        if (facultyProfile != null) {
-            return facultyProfile.getAvatar();
-        } else if (studentProfile != null) {
-            return studentProfile.getAvatar();
-        }
-        return null;
-    }
+    public void setEmailVerifiedAt(String emailVerifiedAt) { this.emailVerifiedAt = emailVerifiedAt; }
+    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+    public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
 } 

@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.tluofficehours.R;
+import com.example.tluofficehours.adapter.FacultyCalendarAdapter;
 import com.example.tluofficehours.model.Booking;
 import com.example.tluofficehours.viewmodel.FacultyCalendarViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -199,14 +200,13 @@ public class FacultyCalendarActivity extends AppCompatActivity {
 
     private void setupCalendar() {
         currentWeek = Calendar.getInstance(new Locale("vi", "VN"));
-        currentWeek.setFirstDayOfWeek(Calendar.MONDAY); // Đặt Thứ Hai là ngày đầu tuần
-        currentWeek.setTime(new Date()); // Đảm bảo tuần hiện tại là tuần của ngày hôm nay
-        // Set selectedDate là ngày đầu tuần hiện tại
+        currentWeek.setFirstDayOfWeek(Calendar.MONDAY);
+        currentWeek.setTime(new Date());
+        // Set selectedDate là ngày đầu tuần hiện tại (UTC 00:00:00)
         Calendar tempCal = (Calendar) currentWeek.clone();
         tempCal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-        selectedDate = tempCal.getTime();
+        selectedDate = toUTCZero(tempCal.getTime());
         Log.d(TAG, "setupCalendar: Calendar initialized. currentWeek: " + currentWeek.getTime() + ", selectedDate: " + selectedDate);
-        // updateCalendarUI() sẽ được gọi từ setupFilterButtons() sau khi khởi tạo ViewModel
     }
 
     private void setupRecyclerView() {
@@ -236,7 +236,7 @@ public class FacultyCalendarActivity extends AppCompatActivity {
             public void onApproveClick(Booking booking) {
                 Log.d(TAG, "onApproveClick: Approving booking ID " + booking.getBookingId());
                 if (viewModel != null) {
-                    viewModel.approveBooking(booking.getBookingId(), selectedDate, currentFilterStatus);
+                    viewModel.approveBooking(Integer.parseInt(booking.getBookingId()), selectedDate, currentFilterStatus);
                 }
             }
 
@@ -245,7 +245,7 @@ public class FacultyCalendarActivity extends AppCompatActivity {
                 Log.d(TAG, "onRejectClick: Rejecting booking ID " + booking.getBookingId());
                 showReasonDialog("Từ chối", (reason) -> {
                     if (viewModel != null) {
-                        viewModel.rejectBooking(booking.getBookingId(), reason, selectedDate, currentFilterStatus);
+                        viewModel.rejectBooking(Integer.parseInt(booking.getBookingId()), reason, selectedDate, currentFilterStatus);
                     }
                 });
             }
@@ -255,7 +255,7 @@ public class FacultyCalendarActivity extends AppCompatActivity {
                 Log.d(TAG, "onCancelClick: Cancelling booking ID " + booking.getBookingId());
                 showReasonDialog("Hủy", (reason) -> {
                     if (viewModel != null) {
-                        viewModel.cancelBooking(booking.getBookingId(), reason, selectedDate, currentFilterStatus);
+                        viewModel.cancelBooking(Integer.parseInt(booking.getBookingId()), reason, selectedDate, currentFilterStatus);
                     }
                 });
             }
@@ -264,7 +264,7 @@ public class FacultyCalendarActivity extends AppCompatActivity {
             public void onCompleteClick(Booking booking) {
                 Log.d(TAG, "onCompleteClick: Completing booking ID " + booking.getBookingId());
                 if (viewModel != null) {
-                    viewModel.markBookingCompleted(booking.getBookingId(), selectedDate, currentFilterStatus);
+                    viewModel.markBookingCompleted(Integer.parseInt(booking.getBookingId()), selectedDate, currentFilterStatus);
                 }
             }
         });
@@ -272,13 +272,13 @@ public class FacultyCalendarActivity extends AppCompatActivity {
 
     private void navigateToPreviousWeek() {
         currentWeek.add(Calendar.WEEK_OF_YEAR, -1);
-        // Set selectedDate là ngày đầu tuần mới
+        // Set selectedDate là ngày đầu tuần mới (UTC 00:00:00)
         Calendar tempCal = (Calendar) currentWeek.clone();
         tempCal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-        selectedDate = tempCal.getTime();
+        selectedDate = toUTCZero(tempCal.getTime());
         updateCalendarUI();
         if (viewModel != null) {
-            viewModel.loadAppointmentsForWeek(currentWeek.getTime(), currentFilterStatus);
+            viewModel.loadAppointmentsForWeek(selectedDate, currentFilterStatus);
             viewModel.setCurrentSelectedDate(selectedDate);
         }
         Log.d(TAG, "navigateToPreviousWeek: Moved to previous week. currentWeek: " + currentWeek.getTime());
@@ -286,12 +286,12 @@ public class FacultyCalendarActivity extends AppCompatActivity {
 
     private void navigateToNextWeek() {
         currentWeek.add(Calendar.WEEK_OF_YEAR, 1);
-        // Set selectedDate là ngày đầu tuần mới
+        // Set selectedDate là ngày đầu tuần mới (UTC 00:00:00)
         Calendar tempCal = (Calendar) currentWeek.clone();
         tempCal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-        selectedDate = tempCal.getTime();
+        selectedDate = toUTCZero(tempCal.getTime());
         if (viewModel != null) {
-            viewModel.loadAppointmentsForWeek(currentWeek.getTime(), currentFilterStatus);
+            viewModel.loadAppointmentsForWeek(selectedDate, currentFilterStatus);
             viewModel.setCurrentSelectedDate(selectedDate);
         }
         updateCalendarUI();
@@ -308,8 +308,8 @@ public class FacultyCalendarActivity extends AppCompatActivity {
 
         SimpleDateFormat dayFormat = new SimpleDateFormat("d", Locale.getDefault());
         SimpleDateFormat weekRangeFormat = new SimpleDateFormat("dd/MM", Locale.getDefault());
-        Calendar tempCal = (Calendar) currentWeek.clone();
-        tempCal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+        Calendar tempCal = Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC"));
+        tempCal.setTime(getStartOfWeekUTC(currentWeek));
         Date startDate = tempCal.getTime();
         tempCal.add(Calendar.DAY_OF_WEEK, 6);
         Date endDate = tempCal.getTime();
@@ -318,7 +318,7 @@ public class FacultyCalendarActivity extends AppCompatActivity {
                 weekRangeFormat.format(startDate),
                 weekRangeFormat.format(endDate)));
 
-        tempCal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+        tempCal.setTime(getStartOfWeekUTC(currentWeek));
         for (int i = 0; i < 7; i++) {
             TextView dayView = dayTextViews.get(i);
             Date day = tempCal.getTime();
@@ -349,7 +349,7 @@ public class FacultyCalendarActivity extends AppCompatActivity {
                 dayView.setTextColor(Color.BLACK);
                 dayView.setTypeface(null, android.graphics.Typeface.NORMAL);
             }
-            tempCal.add(Calendar.DAY_OF_WEEK, 1);
+            tempCal.add(Calendar.DATE, 1);
         }
         // Cập nhật ngày tháng hiển thị
         SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd/MM/yyyy", new Locale("vi", "VN"));
@@ -359,16 +359,14 @@ public class FacultyCalendarActivity extends AppCompatActivity {
 
     private void onDayClicked(int dayIndex) {
         Log.d(TAG, "onDayClicked: Day " + dayIndex + " clicked.");
-        Calendar tempCal = (Calendar) currentWeek.clone();
-        tempCal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+        Calendar tempCal = Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC"));
+        tempCal.setTime(getStartOfWeekUTC(currentWeek));
         tempCal.add(Calendar.DATE, dayIndex);
-        selectedDate = tempCal.getTime();
+        selectedDate = toUTCZero(tempCal.getTime());
 
         updateCalendarUI();
         if (viewModel != null) {
-            // Khi ngày thay đổi, tải lại dữ liệu với bộ lọc hiện tại
             viewModel.loadAppointmentsForWeek(currentWeek.getTime(), currentFilterStatus);
-            // Đồng thời, kích hoạt lọc lại dựa trên selectedDate
             viewModel.setCurrentSelectedDate(selectedDate);
         }
     }
@@ -473,5 +471,29 @@ public class FacultyCalendarActivity extends AppCompatActivity {
 
     interface ReasonDialogCallback {
         void onReasonEntered(String reason);
+    }
+
+    // Thêm hàm chuyển Date về UTC 00:00:00
+    private Date toUTCZero(Date date) {
+        Calendar cal = Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC"));
+        cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+
+    // Thêm hàm lấy ngày đầu tuần theo UTC
+    private Date getStartOfWeekUTC(Calendar calendar) {
+        Calendar cal = (Calendar) calendar.clone();
+        cal.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+        cal.setFirstDayOfWeek(Calendar.MONDAY);
+        cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
     }
 }

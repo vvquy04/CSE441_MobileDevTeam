@@ -75,6 +75,7 @@ public class UpcomingAppointmentsFragment extends Fragment {
                 startActivity(intent);
             }
         });
+        adapter.setDisplayMode("upcoming");
         recyclerView.setAdapter(adapter);
         
         // Thay thế layout cũ bằng RecyclerView và empty state
@@ -102,7 +103,8 @@ public class UpcomingAppointmentsFragment extends Fragment {
                 List<Appointment> upcoming = new ArrayList<>();
                 for (Appointment appt : allAppointments) {
                     Log.d(TAG, "Appointment: " + appt.getTeacherName() + " - Status: " + appt.getStatus());
-                    if ("CONFIRMED".equals(appt.getStatus()) || "PENDING".equals(appt.getStatus()) || "BOOKED".equals(appt.getStatus())) {
+                    String status = appt.getStatus();
+                    if ("pending".equalsIgnoreCase(status) || "confirmed".equalsIgnoreCase(status)) {
                         upcoming.add(appt);
                     }
                 }

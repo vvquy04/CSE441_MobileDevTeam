@@ -1,4 +1,4 @@
-package com.example.tluofficehours.view;
+package com.example.tluofficehours.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,7 +46,7 @@ public class FacultyCalendarAdapter extends RecyclerView.Adapter<FacultyCalendar
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_appointment, parent, false);
+                .inflate(R.layout.item_appointment_faculty, parent, false);
         return new ViewHolder(view);
     }
 
@@ -84,46 +84,87 @@ public class FacultyCalendarAdapter extends RecyclerView.Adapter<FacultyCalendar
 
         public void bind(Booking booking) {
             // Set student info
+            String studentName = "Không có tên";
+            String className = "Không có lớp";
+            String avatarUrl = null;
             if (booking.getStudent() != null && booking.getStudent().getStudentProfile() != null) {
-                String studentName = booking.getStudent().getStudentProfile().getStudentName();
-                String className = booking.getStudent().getStudentProfile().getClassName();
-                
-                tvStudentName.setText(studentName != null ? studentName : "Không có tên");
-                tvStudentClass.setText(className != null ? className : "Không có lớp");
-                
-                String avatarUrl = booking.getStudent().getAvatar();
-                if (avatarUrl != null && !avatarUrl.isEmpty()) {
-                    // TODO: Load avatar from URL using Glide or Picasso
-                    ivStudentAvatar.setImageResource(R.drawable.avatar_placeholder);
+                com.example.tluofficehours.model.StudentProfile profile = booking.getStudent().getStudentProfile();
+                if (profile.getProfile() != null) {
+                    studentName = profile.getProfile().getStudentName() != null ? profile.getProfile().getStudentName() : studentName;
+                    className = profile.getProfile().getClassName() != null ? profile.getProfile().getClassName() : className;
+                    avatarUrl = profile.getProfile().getAvatar();
                 } else {
-                    ivStudentAvatar.setImageResource(R.drawable.avatar_placeholder);
+                    studentName = profile.getStudentName() != null ? profile.getStudentName() : studentName;
+                    className = profile.getClassName() != null ? profile.getClassName() : className;
+                    avatarUrl = profile.getAvatar();
                 }
+            }
+            tvStudentName.setText(studentName);
+            tvStudentClass.setText(className);
+            if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                com.bumptech.glide.Glide.with(itemView.getContext())
+                        .load(avatarUrl)
+                        .placeholder(R.drawable.avatar_placeholder)
+                        .error(R.drawable.avatar_placeholder)
+                        .into(ivStudentAvatar);
             } else {
-                tvStudentName.setText("Không có thông tin");
-                tvStudentClass.setText("Không có thông tin");
                 ivStudentAvatar.setImageResource(R.drawable.avatar_placeholder);
             }
 
             // Set booking info
+            String timeStr = "Không có giờ hẹn";
+            String dateStr = "";
             if (booking.getSlot() != null) {
-                tvBookingTime.setText(formatTimeRange(booking.getSlot().getStartTime(), booking.getSlot().getEndTime()));
-            } else {
-                tvBookingTime.setText("Không có giờ hẹn");
+                String start = booking.getSlot().getStartTime();
+                String end = booking.getSlot().getEndTime();
+                // Parse ngày và giờ
+                try {
+                    java.text.SimpleDateFormat iso = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.getDefault());
+                    iso.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+                    java.text.SimpleDateFormat outDate = new java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault());
+                    java.text.SimpleDateFormat outTime = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault());
+                    java.util.Date startDate = iso.parse(start);
+                    java.util.Date endDate = iso.parse(end);
+                    if (startDate != null && endDate != null) {
+                        dateStr = outDate.format(startDate);
+                        timeStr = outTime.format(startDate) + " - " + outTime.format(endDate);
+                    }
+                } catch (Exception e) {
+                    timeStr = formatTimeRange(start, end);
+                }
             }
+            tvBookingTime.setText(timeStr);
             tvPurpose.setText(booking.getPurpose() != null ? booking.getPurpose() : "Không có mục đích");
-            tvStatus.setText(getStatusText(booking.getStatus()));
-            
-            // Set status badge color
-            if (viewModel != null) {
-                int statusColor = viewModel.getStatusColor(booking.getStatus());
-                int statusTextColor = viewModel.getStatusTextColor(booking.getStatus());
-                tvStatus.setBackgroundTintList(android.content.res.ColorStateList.valueOf(statusColor));
-                tvStatus.setTextColor(statusTextColor);
-            } else {
-                tvStatus.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFFF5F5F5));
-                tvStatus.setTextColor(0xFF888888);
+            // Trạng thái
+            String statusVi = getStatusText(booking.getStatus());
+            tvStatus.setText(statusVi);
+            int color = android.graphics.Color.GRAY;
+            switch (booking.getStatus() != null ? booking.getStatus().toLowerCase() : "") {
+                case "pending":
+                    color = android.graphics.Color.parseColor("#FFA726"); // cam
+                    break;
+                case "confirmed":
+                    color = android.graphics.Color.parseColor("#388E3C"); // xanh lá
+                    break;
+                case "completed":
+                    color = android.graphics.Color.parseColor("#757575"); // xám
+                    break;
+                case "cancelled":
+                case "rejected":
+                    color = android.graphics.Color.parseColor("#D32F2F"); // đỏ
+                    break;
             }
-
+            tvStatus.setTextColor(color);
+            // Lý do hủy
+            TextView tvCancellationReason = itemView.findViewById(R.id.cancellationReason);
+            if (tvCancellationReason != null) {
+                if ("cancelled".equalsIgnoreCase(booking.getStatus()) && booking.getCancellationReason() != null && !booking.getCancellationReason().isEmpty()) {
+                    tvCancellationReason.setVisibility(View.VISIBLE);
+                    tvCancellationReason.setText("Lý do hủy: " + booking.getCancellationReason());
+                } else {
+                    tvCancellationReason.setVisibility(View.GONE);
+                }
+            }
             // Setup action buttons
             setupClickListeners(booking);
         }

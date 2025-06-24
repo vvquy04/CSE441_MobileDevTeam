@@ -29,6 +29,7 @@ public class AppointmentDetailActivity extends AppCompatActivity {
     private TextView appointmentRoom;
     private TextView cancellationReasonText;
     private Button cancelAppointmentButton;
+    private Button rebookAppointmentButton;
     private AppointmentViewModel viewModel;
 
     @SuppressLint("MissingInflatedId")
@@ -51,6 +52,7 @@ public class AppointmentDetailActivity extends AppCompatActivity {
         appointmentRoom = findViewById(R.id.appointmentRoom);
         cancellationReasonText = findViewById(R.id.cancellationReason);
         cancelAppointmentButton = findViewById(R.id.cancelAppointmentButton);
+        rebookAppointmentButton = findViewById(R.id.rebookAppointmentButton);
 
         // Nhận dữ liệu từ Intent và hiển thị
         loadAppointmentData();
@@ -65,6 +67,19 @@ public class AppointmentDetailActivity extends AppCompatActivity {
 
         // Xử lý sự kiện cho nút Hủy lịch hẹn
         cancelAppointmentButton.setOnClickListener(v -> showCancelDialog());
+
+        // Xử lý sự kiện cho nút Đặt lại lịch
+        rebookAppointmentButton.setOnClickListener(v -> {
+            String facultyUserId = getIntent().getStringExtra("facultyUserId");
+            if (facultyUserId != null && !facultyUserId.isEmpty()) {
+                Intent intent = new Intent(this, FacultyDetailActivity.class);
+                intent.putExtra("facultyUserId", facultyUserId);
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "Không tìm thấy thông tin giảng viên để đặt lại lịch!", Toast.LENGTH_SHORT).show();
+                rebookAppointmentButton.setVisibility(View.GONE);
+            }
+        });
     }
 
     private void loadAppointmentData() {
@@ -80,6 +95,7 @@ public class AppointmentDetailActivity extends AppCompatActivity {
             String roomStr = intent.getStringExtra("room");
             String status = intent.getStringExtra("status");
             String cancellationReason = intent.getStringExtra("cancellationReason");
+            String facultyUserId = intent.getStringExtra("facultyUserId");
 
             // Log dữ liệu nhận được
             android.util.Log.d("AppointmentDetail", "Received data:");
@@ -92,6 +108,7 @@ public class AppointmentDetailActivity extends AppCompatActivity {
             android.util.Log.d("AppointmentDetail", "room: " + roomStr);
             android.util.Log.d("AppointmentDetail", "status: " + status);
             android.util.Log.d("AppointmentDetail", "cancellationReason: " + cancellationReason);
+            android.util.Log.d("AppointmentDetail", "facultyUserId: " + facultyUserId);
 
             // Hiển thị dữ liệu với null safety
             teacherName.setText(teacherNameStr != null ? teacherNameStr : "Không có thông tin");
@@ -110,11 +127,11 @@ public class AppointmentDetailActivity extends AppCompatActivity {
             if (avatarUrl != null && !avatarUrl.isEmpty()) {
                 Glide.with(this)
                     .load(avatarUrl)
-                    .placeholder(R.drawable.teacher_placeholder)
-                    .error(R.drawable.teacher_placeholder)
+                    .placeholder(R.drawable.teacher_placeholder_img)
+                    .error(R.drawable.teacher_placeholder_img)
                     .into(teacherAvatar);
             } else {
-                teacherAvatar.setImageResource(R.drawable.teacher_placeholder);
+                teacherAvatar.setImageResource(R.drawable.teacher_placeholder_img);
             }
 
             // Hiển thị lý do hủy nếu có
@@ -128,10 +145,15 @@ public class AppointmentDetailActivity extends AppCompatActivity {
             }
 
             // Ẩn nút hủy nếu đã hủy hoặc đã hoàn thành
-            if ("CANCELLED".equalsIgnoreCase(status) || "COMPLETED".equalsIgnoreCase(status)) {
+            if (("CANCELLED".equalsIgnoreCase(status) || "COMPLETED".equalsIgnoreCase(status)) && facultyUserId != null && !facultyUserId.isEmpty()) {
                 cancelAppointmentButton.setVisibility(View.GONE);
+                rebookAppointmentButton.setVisibility(View.VISIBLE);
+            } else if ("CANCELLED".equalsIgnoreCase(status) || "COMPLETED".equalsIgnoreCase(status)) {
+                cancelAppointmentButton.setVisibility(View.GONE);
+                rebookAppointmentButton.setVisibility(View.GONE);
             } else {
                 cancelAppointmentButton.setVisibility(View.VISIBLE);
+                rebookAppointmentButton.setVisibility(View.GONE);
             }
         } else {
             // Fallback nếu không có intent
@@ -142,7 +164,7 @@ public class AppointmentDetailActivity extends AppCompatActivity {
             appointmentTime.setText("Không có thông tin");
             appointmentPurpose.setText("Không có mục đích");
             appointmentRoom.setText("Không có thông tin");
-            teacherAvatar.setImageResource(R.drawable.teacher_placeholder);
+            teacherAvatar.setImageResource(R.drawable.teacher_placeholder_img);
         }
     }
 
