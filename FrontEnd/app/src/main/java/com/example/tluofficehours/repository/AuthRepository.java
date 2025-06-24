@@ -3,9 +3,9 @@ package com.example.tluofficehours.repository;
 import com.example.tluofficehours.api.ApiService;
 import com.example.tluofficehours.api.RetrofitClient;
 import com.example.tluofficehours.model.LoginRequest;
-import com.example.tluofficehours.model.RegisterFacultyRequest;
 import com.example.tluofficehours.model.RegisterStudentRequest;
 import com.example.tluofficehours.model.Department;
+import com.example.tluofficehours.model.LoginResponse;
 
 import java.util.List;
 import okhttp3.MultipartBody;
@@ -21,18 +21,18 @@ public class AuthRepository {
     }
 
     public Call<ResponseBody> registerFaculty(RequestBody email, RequestBody password, RequestBody passwordConfirmation, RequestBody facultyName, RequestBody departmentId, RequestBody degree, RequestBody phoneNumber, RequestBody officeRoom, MultipartBody.Part avatar) {
-        return apiService.registerFaculty(email, password, passwordConfirmation, facultyName, departmentId, degree, phoneNumber, officeRoom, avatar);
+        return com.example.tluofficehours.api.RetrofitClient.getApiService().registerFaculty(email, password, passwordConfirmation, facultyName, departmentId, degree, phoneNumber, officeRoom, avatar);
     }
 
     public Call<List<Department>> getDepartments() {
-        return apiService.getDepartments();
+        return com.example.tluofficehours.api.RetrofitClient.getApiService().getDepartments();
     }
 
     public Call<ResponseBody> registerStudent(RequestBody email, RequestBody password, RequestBody passwordConfirmation, RequestBody studentName, RequestBody studentCode, RequestBody className, RequestBody phoneNumber, MultipartBody.Part avatar) {
-        return apiService.registerStudent(email, password, passwordConfirmation, studentName, studentCode, className, phoneNumber, avatar);
+        return com.example.tluofficehours.api.RetrofitClient.getApiService().registerStudent(email, password, passwordConfirmation, studentName, studentCode, className, phoneNumber, avatar);
     }
 
-    public Call<ResponseBody> login(LoginRequest request) {
-        return apiService.login(request);
+    public Call<LoginResponse> login(LoginRequest request) {
+        return com.example.tluofficehours.api.RetrofitClient.getApiService().login(request);
     }
 }

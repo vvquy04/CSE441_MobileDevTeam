@@ -9,6 +9,8 @@ import java.io.OutputStream;
 import java.io.FileOutputStream;
 import java.io.File;
 import java.io.IOException;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 
 public class FileUtils {
     public static String getPath(Context context, Uri uri) {
@@ -37,5 +39,19 @@ public class FileUtils {
         outputStream.close();
         inputStream.close();
         return tempFile;
+    }
+
+    public static MultipartBody.Part createImagePart(String partName, String imagePath) {
+        if (imagePath == null || imagePath.isEmpty()) {
+            return null;
+        }
+        
+        File file = new File(imagePath);
+        if (!file.exists()) {
+            return null;
+        }
+        
+        RequestBody requestFile = RequestBody.create(okhttp3.MediaType.parse("image/*"), file);
+        return MultipartBody.Part.createFormData(partName, file.getName(), requestFile);
     }
 } 

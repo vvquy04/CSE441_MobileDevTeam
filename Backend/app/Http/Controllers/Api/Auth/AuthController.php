@@ -149,4 +149,32 @@ class AuthController extends Controller
 
         return response()->json(['message' => 'Đăng xuất thành công.']);
     }
+
+    public function getUserProfile(Request $request)
+    {
+        $user = $request->user();
+        $roles = $user->roles->pluck('RoleName')->toArray();
+        
+        $profile = null;
+        $avatarUrl = null;
+        
+        if (in_array('student', $roles)) {
+            $profile = StudentProfile::where('StudentUserId', $user->UserId)->first();
+            if ($profile && $profile->avatar) {
+                $avatarUrl = asset('storage/' . $profile->avatar);
+            }
+        } elseif (in_array('faculty', $roles)) {
+            $profile = FacultyProfile::where('faculty_user_id', $user->UserId)->first();
+            if ($profile && $profile->avatar) {
+                $avatarUrl = asset('storage/' . $profile->avatar);
+            }
+        }
+        
+        return response()->json([
+            'user' => $user,
+            'roles' => $roles,
+            'profile' => $profile,
+            'avatar_url' => $avatarUrl
+        ]);
+    }
 } 

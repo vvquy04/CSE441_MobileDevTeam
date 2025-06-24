@@ -3,6 +3,7 @@ package com.example.tluofficehours.view;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
+// HEAD
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.Gravity;
@@ -12,6 +13,10 @@ import android.widget.TextView;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+//
+import android.widget.Toast;
+import androidx.activity.EdgeToEdge;
+// vanquy_refactor
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -25,6 +30,7 @@ import com.example.tluofficehours.viewmodel.FacultyMainViewModel;
 import com.example.tluofficehours.view.FacultyCalendarAdapter;
 
 public class FacultyMainActivity extends AppCompatActivity {
+// HEAD
     
     private static final String TAG = "FacultyMainActivity";
     private BottomNavigationView bottomNavigationView;
@@ -36,10 +42,13 @@ public class FacultyMainActivity extends AppCompatActivity {
     private FacultyCalendarAdapter appointmentAdapter;
     private TextView tvNoUpcomingAppointments;
 
+//
+// vanquy_refactor
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_faculty_main);
+// HEAD
         
         Log.d(TAG, "onCreate: Setting up FacultyMainActivity");
         initViews();
@@ -223,3 +232,15 @@ public class FacultyMainActivity extends AppCompatActivity {
         }
     }
 }
+//
+
+        Toast.makeText(this, "Chào mừng giảng viên!", Toast.LENGTH_SHORT).show();
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
+    }
+} 
+// vanquy_refactor

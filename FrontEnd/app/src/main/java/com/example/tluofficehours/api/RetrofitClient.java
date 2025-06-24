@@ -1,8 +1,11 @@
 package com.example.tluofficehours.api;
 
+// HEAD
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
+//
+// vanquy_refactor
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -13,7 +16,17 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class RetrofitClient {
     private static final String BASE_URL = "http://10.0.2.2:8000/";
     private static Retrofit retrofit = null;
+// HEAD
     private static Context context;
+//
+    private static String authToken = null;
+
+    public static void setAuthToken(String token) {
+        authToken = token;
+        // Reset retrofit instance to apply new token
+        retrofit = null;
+    }
+// vanquy_refactor
 
     public static void init(Context appContext) {
         context = appContext;
@@ -21,10 +34,12 @@ public class RetrofitClient {
 
     public static Retrofit getRetrofitInstance() {
         if (retrofit == null) {
+            android.util.Log.d("RetrofitClient", "Creating new Retrofit instance. Current token: " + (authToken != null ? authToken : "null"));
             // Create logging interceptor
             HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
             logging.setLevel(HttpLoggingInterceptor.Level.BODY);
 
+// HEAD
             // Add authentication interceptor
             Interceptor authInterceptor = chain -> {
                 Request original = chain.request();
@@ -53,6 +68,22 @@ public class RetrofitClient {
                 requestBuilder.addHeader("Accept", "application/json");
                 
                 Request request = requestBuilder.build();
+//
+            // Create auth interceptor
+            Interceptor authInterceptor = chain -> {
+                Request original = chain.request();
+                Request.Builder builder = original.newBuilder();
+                
+                if (authToken != null && !authToken.isEmpty()) {
+                    builder.addHeader("Authorization", "Bearer " + authToken);
+                    android.util.Log.d("RetrofitClient", "Adding Authorization header: Bearer " + authToken);
+                } else {
+                    android.util.Log.w("RetrofitClient", "No auth token available for request: " + original.url());
+                }
+                android.util.Log.d("RetrofitClient", "Request URL: " + original.url());
+                android.util.Log.d("RetrofitClient", "Request Headers: " + builder.build().headers());
+                Request request = builder.build();
+// vanquy_refactor
                 return chain.proceed(request);
             };
 
