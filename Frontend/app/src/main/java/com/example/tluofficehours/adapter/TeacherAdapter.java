@@ -12,20 +12,20 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.tluofficehours.R;
-import com.example.tluofficehours.model.Teacher;
+import com.example.tluofficehours.model.FacultyProfile;
 
 import java.util.List;
 
 public class TeacherAdapter extends RecyclerView.Adapter<TeacherAdapter.TeacherViewHolder> {
-    private List<Teacher> teachers;
+    private List<FacultyProfile> teachers;
     private Context context;
     private OnTeacherClickListener listener;
 
     public interface OnTeacherClickListener {
-        void onTeacherClick(Teacher teacher);
+        void onTeacherClick(FacultyProfile teacher);
     }
 
-    public TeacherAdapter(Context context, List<Teacher> teachers, OnTeacherClickListener listener) {
+    public TeacherAdapter(Context context, List<FacultyProfile> teachers, OnTeacherClickListener listener) {
         this.context = context;
         this.teachers = teachers;
         this.listener = listener;
@@ -40,7 +40,7 @@ public class TeacherAdapter extends RecyclerView.Adapter<TeacherAdapter.TeacherV
 
     @Override
     public void onBindViewHolder(@NonNull TeacherViewHolder holder, int position) {
-        Teacher teacher = teachers.get(position);
+        FacultyProfile teacher = teachers.get(position);
         holder.bind(teacher);
     }
 
@@ -49,7 +49,7 @@ public class TeacherAdapter extends RecyclerView.Adapter<TeacherAdapter.TeacherV
         return teachers.size();
     }
 
-    public void updateTeachers(List<Teacher> newTeachers) {
+    public void updateTeachers(List<FacultyProfile> newTeachers) {
         android.util.Log.d("TeacherAdapter", "updateTeachers called with " + (newTeachers != null ? newTeachers.size() : "null") + " teachers");
         this.teachers = newTeachers;
         notifyDataSetChanged();
@@ -77,8 +77,10 @@ public class TeacherAdapter extends RecyclerView.Adapter<TeacherAdapter.TeacherV
             });
         }
 
-        public void bind(Teacher teacher) {
+        public void bind(FacultyProfile teacher) {
             android.util.Log.d("TeacherAdapter", "Binding teacher: " + teacher.getFacultyName());
+            android.util.Log.d("TeacherAdapter", "Teacher department ID: " + teacher.getDepartmentId());
+            android.util.Log.d("TeacherAdapter", "Teacher department name: " + teacher.getDepartmentName());
             
             teacherTitle.setText("Giảng viên");
             
@@ -92,14 +94,19 @@ public class TeacherAdapter extends RecyclerView.Adapter<TeacherAdapter.TeacherV
             }
             teacherName.setText(displayName);
             
-            String departmentText = "Bộ môn " + teacher.getDepartmentName();
+            // Sử dụng department_name trực tiếp từ model
+            String departmentText = "Bộ môn Chưa cập nhật";
+            if (teacher.getDepartmentName() != null && !teacher.getDepartmentName().isEmpty()) {
+                departmentText = "Bộ môn " + teacher.getDepartmentName();
+            }
+            android.util.Log.d("TeacherAdapter", "Final department text: " + departmentText);
             teacherDepartment.setText(departmentText);
 
             // Load teacher image
-            if (teacher.getAvatarUrl() != null && !teacher.getAvatarUrl().isEmpty()) {
-                android.util.Log.d("TeacherAdapter", "Loading teacher avatar: " + teacher.getAvatarUrl());
+            if (teacher.getAvatar() != null && !teacher.getAvatar().isEmpty()) {
+                android.util.Log.d("TeacherAdapter", "Loading teacher avatar: " + teacher.getAvatar());
                 Glide.with(context)
-                    .load(teacher.getAvatarUrl())
+                    .load(teacher.getAvatar())
                     .placeholder(R.drawable.teacher_placeholder)
                     .error(R.drawable.teacher_placeholder)
                     .into(teacherImage);

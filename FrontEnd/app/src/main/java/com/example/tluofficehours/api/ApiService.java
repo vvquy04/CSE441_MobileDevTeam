@@ -4,10 +4,10 @@ import com.example.tluofficehours.model.RegisterStudentRequest;
 import com.example.tluofficehours.model.LoginRequest;
 import com.example.tluofficehours.model.LoginResponse;
 import com.example.tluofficehours.model.Department;
-import com.example.tluofficehours.model.TimeSlot;
+import com.example.tluofficehours.model.AvailableSlot;
 import com.example.tluofficehours.model.UserProfile;
 import com.example.tluofficehours.model.StudentProfile;
-import com.example.tluofficehours.model.Teacher;
+import com.example.tluofficehours.model.FacultyProfile;
 import com.example.tluofficehours.model.Appointment;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -92,13 +92,13 @@ public interface ApiService {
     @Headers({
         "Accept: application/json"
     })
-    Call<List<Teacher>> getFeaturedTeachers();
+    Call<List<FacultyProfile>> getFeaturedTeachers();
 
     @GET("api/student/teachers-by-department/{departmentId}")
     @Headers({
         "Accept: application/json"
     })
-    Call<List<Teacher>> getTeachersByDepartment(@Path("departmentId") String departmentId);
+    Call<List<FacultyProfile>> getTeachersByDepartment(@Path("departmentId") String departmentId);
 
     // Commented out multipart method since JSON method is working
     /*
@@ -128,17 +128,17 @@ public interface ApiService {
 
     @GET("api/student/search-teachers")
     @Headers({"Accept: application/json"})
-    Call<List<Teacher>> searchTeachers(@Query("query") String query);
+    Call<List<FacultyProfile>> searchTeachers(@Query("query") String query);
 
     @GET("api/student/teacher/{facultyUserId}")
     @Headers({"Accept: application/json"})
-    Call<Teacher> getTeacherDetail(@Path("facultyUserId") String facultyUserId);
+    Call<FacultyProfile> getTeacherDetail(@Path("facultyUserId") String facultyUserId);
 
     @GET("api/faculty/{facultyUserId}/available-slots")
     @Headers({
         "Accept: application/json"
     })
-    Call<List<TimeSlot>> getAvailableSlots(
+    Call<List<AvailableSlot>> getAvailableSlots(
         @Path("facultyUserId") String facultyUserId,
         @Query("date") String date
     );

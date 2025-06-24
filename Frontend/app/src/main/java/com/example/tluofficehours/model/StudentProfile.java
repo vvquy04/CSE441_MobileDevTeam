@@ -27,6 +27,9 @@ public class StudentProfile {
     }
     
     public static class Profile {
+        @SerializedName("StudentUserId")
+        private String studentUserId;
+        
         @SerializedName("StudentName")
         private String studentName;
         
@@ -39,10 +42,15 @@ public class StudentProfile {
         @SerializedName("PhoneNumber")
         private String phoneNumber;
         
+        @SerializedName("avatar")
+        private String avatar;
+        
+        public String getStudentUserId() { return studentUserId; }
         public String getStudentName() { return studentName; }
         public String getStudentCode() { return studentCode; }
         public String getClassName() { return className; }
         public String getPhoneNumber() { return phoneNumber; }
+        public String getAvatar() { return avatar; }
     }
     
     public User getUser() { return user; }

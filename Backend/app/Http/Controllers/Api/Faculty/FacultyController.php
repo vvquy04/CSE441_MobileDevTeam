@@ -126,17 +126,11 @@ class FacultyController extends Controller
         if (!$date) {
             return response()->json(['message' => 'Missing date parameter'], 400);
         }
+        
         $slots = \App\Models\AvailableSlot::where('faculty_user_id', $facultyUserId)
             ->whereDate('StartTime', $date)
-            ->get()
-            ->map(function($slot) {
-                $status = $slot->IsAvailable ? 'AVAILABLE' : 'BOOKED';
-                return [
-                    'id' => $slot->SlotId,
-                    'time' => date('H:i', strtotime($slot->StartTime)) . ' - ' . date('H:i', strtotime($slot->EndTime)),
-                    'status' => $status,
-                ];
-            });
+            ->get();
+            
         return response()->json($slots);
     }
 } 

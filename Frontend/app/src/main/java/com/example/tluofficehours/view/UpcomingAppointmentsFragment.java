@@ -1,4 +1,4 @@
-package com.example.tluofficehours;
+package com.example.tluofficehours.view;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,28 +11,32 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.tluofficehours.R;
 import com.example.tluofficehours.adapter.AppointmentAdapter;
-import com.example.tluofficehours.api.ApiService;
 import com.example.tluofficehours.model.Appointment;
+import com.example.tluofficehours.viewmodel.AppointmentViewModel;
 import java.util.ArrayList;
 import java.util.List;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class UpcomingAppointmentsFragment extends Fragment {
     private static final String TAG = "UpcomingFragment";
     private RecyclerView recyclerView;
     private TextView emptyStateText;
     private AppointmentAdapter adapter;
+    private AppointmentViewModel viewModel;
     private List<Appointment> allAppointments = new ArrayList<>();
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_upcoming_appointments, container, false);
+        
+        // Initialize ViewModel
+        viewModel = new ViewModelProvider(requireActivity()).get(AppointmentViewModel.class);
         
         // Tạo RecyclerView
         recyclerView = new RecyclerView(requireContext());
@@ -48,7 +52,7 @@ public class UpcomingAppointmentsFragment extends Fragment {
         adapter = new AppointmentAdapter(requireContext(), new ArrayList<>(), new AppointmentAdapter.OnAppointmentActionListener() {
             @Override
             public void onCancel(Appointment appointment, String reason) {
-                cancelAppointment(appointment, reason);
+                viewModel.cancelAppointment(appointment.getId(), reason);
             }
             @Override
             public void onRebook(Appointment appointment) {
@@ -79,70 +83,60 @@ public class UpcomingAppointmentsFragment extends Fragment {
         root.addView(recyclerView);
         root.addView(emptyStateText);
         
-        fetchAppointments();
+        // Observe ViewModel data
+        observeViewModel();
+        
+        // Load appointments
+        viewModel.loadAppointments();
+        
         return view;
     }
 
-    private void fetchAppointments() {
-        Log.d(TAG, "Fetching appointments...");
-        ApiService apiService = com.example.tluofficehours.api.RetrofitClient.getApiService();
-        apiService.getStudentAppointments().enqueue(new Callback<List<Appointment>>() {
-            @Override
-            public void onResponse(Call<List<Appointment>> call, Response<List<Appointment>> response) {
-                Log.d(TAG, "Response received: " + response.code());
-                if (response.isSuccessful() && response.body() != null) {
-                    allAppointments = response.body();
-                    Log.d(TAG, "Total appointments: " + allAppointments.size());
-                    
-                    List<Appointment> upcoming = new ArrayList<>();
-                    for (Appointment appt : allAppointments) {
-                        Log.d(TAG, "Appointment: " + appt.getTeacherName() + " - Status: " + appt.getStatus());
-                        if ("CONFIRMED".equals(appt.getStatus()) || "PENDING".equals(appt.getStatus()) || "BOOKED".equals(appt.getStatus())) {
-                            upcoming.add(appt);
-                        }
+    private void observeViewModel() {
+        // Observe appointments
+        viewModel.getAppointments().observe(getViewLifecycleOwner(), appointments -> {
+            if (appointments != null) {
+                allAppointments = appointments;
+                Log.d(TAG, "Total appointments: " + allAppointments.size());
+                
+                List<Appointment> upcoming = new ArrayList<>();
+                for (Appointment appt : allAppointments) {
+                    Log.d(TAG, "Appointment: " + appt.getTeacherName() + " - Status: " + appt.getStatus());
+                    if ("CONFIRMED".equals(appt.getStatus()) || "PENDING".equals(appt.getStatus()) || "BOOKED".equals(appt.getStatus())) {
+                        upcoming.add(appt);
                     }
-                    Log.d(TAG, "Upcoming appointments: " + upcoming.size());
-                    
-                    adapter.setAppointments(upcoming);
-                    
-                    // Hiển thị/ẩn empty state
-                    if (upcoming.isEmpty()) {
-                        recyclerView.setVisibility(View.GONE);
-                        emptyStateText.setVisibility(View.VISIBLE);
-                    } else {
-                        recyclerView.setVisibility(View.VISIBLE);
-                        emptyStateText.setVisibility(View.GONE);
-                    }
-                } else {
-                    Log.e(TAG, "Error response: " + response.code());
-                    Toast.makeText(requireContext(), "Không thể tải lịch hẹn!", Toast.LENGTH_SHORT).show();
                 }
-            }
-            @Override
-            public void onFailure(Call<List<Appointment>> call, Throwable t) {
-                Log.e(TAG, "Network error", t);
-                Toast.makeText(requireContext(), "Lỗi kết nối!", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Upcoming appointments: " + upcoming.size());
+                
+                adapter.setAppointments(upcoming);
+                
+                // Hiển thị/ẩn empty state
+                if (upcoming.isEmpty()) {
+                    recyclerView.setVisibility(View.GONE);
+                    emptyStateText.setVisibility(View.VISIBLE);
+                } else {
+                    recyclerView.setVisibility(View.VISIBLE);
+                    emptyStateText.setVisibility(View.GONE);
+                }
             }
         });
-    }
-
-    private void cancelAppointment(Appointment appointment, String reason) {
-        ApiService apiService = com.example.tluofficehours.api.RetrofitClient.getApiService();
-        java.util.Map<String, String> body = new java.util.HashMap<>();
-        body.put("reason", reason);
-        apiService.cancelAppointment(appointment.getId(), body).enqueue(new retrofit2.Callback<okhttp3.ResponseBody>() {
-            @Override
-            public void onResponse(retrofit2.Call<okhttp3.ResponseBody> call, retrofit2.Response<okhttp3.ResponseBody> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(requireContext(), "Đã hủy lịch thành công!", Toast.LENGTH_SHORT).show();
-                    fetchAppointments();
-                } else {
-                    Toast.makeText(requireContext(), "Hủy lịch thất bại!", Toast.LENGTH_SHORT).show();
-                }
+        
+        // Observe loading state
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            // Có thể hiển thị loading indicator nếu cần
+        });
+        
+        // Observe error messages
+        viewModel.getErrorMessage().observe(getViewLifecycleOwner(), errorMessage -> {
+            if (errorMessage != null && !errorMessage.isEmpty()) {
+                Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show();
             }
-            @Override
-            public void onFailure(retrofit2.Call<okhttp3.ResponseBody> call, Throwable t) {
-                Toast.makeText(requireContext(), "Lỗi kết nối!", Toast.LENGTH_SHORT).show();
+        });
+        
+        // Observe cancel success
+        viewModel.getCancelSuccess().observe(getViewLifecycleOwner(), success -> {
+            if (success) {
+                Toast.makeText(requireContext(), "Đã hủy lịch thành công!", Toast.LENGTH_SHORT).show();
             }
         });
     }

@@ -1,4 +1,4 @@
-package com.example.tluofficehours;
+package com.example.tluofficehours.view;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,28 +11,32 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.tluofficehours.adapter.AppointmentAdapter;
-import com.example.tluofficehours.api.ApiService;
 import com.example.tluofficehours.model.Appointment;
+import com.example.tluofficehours.viewmodel.AppointmentViewModel;
+import com.example.tluofficehours.R;
+
 import java.util.ArrayList;
 import java.util.List;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class HistoryAppointmentsFragment extends Fragment {
     private static final String TAG = "HistoryFragment";
     private RecyclerView recyclerView;
     private TextView emptyStateText;
     private AppointmentAdapter adapter;
+    private AppointmentViewModel viewModel;
     private List<Appointment> allAppointments = new ArrayList<>();
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_history_apppointments, container, false);
+        
+        // Initialize ViewModel
+        viewModel = new ViewModelProvider(requireActivity()).get(AppointmentViewModel.class);
         
         // Tạo RecyclerView
         recyclerView = new RecyclerView(requireContext());
@@ -79,49 +83,50 @@ public class HistoryAppointmentsFragment extends Fragment {
         root.addView(recyclerView);
         root.addView(emptyStateText);
         
-        fetchAppointments();
+        // Observe ViewModel data
+        observeViewModel();
+        
         return view;
     }
 
-    private void fetchAppointments() {
-        Log.d(TAG, "Fetching appointments...");
-        ApiService apiService = com.example.tluofficehours.api.RetrofitClient.getApiService();
-        apiService.getStudentAppointments().enqueue(new Callback<List<Appointment>>() {
-            @Override
-            public void onResponse(Call<List<Appointment>> call, Response<List<Appointment>> response) {
-                Log.d(TAG, "Response received: " + response.code());
-                if (response.isSuccessful() && response.body() != null) {
-                    allAppointments = response.body();
-                    Log.d(TAG, "Total appointments: " + allAppointments.size());
-                    
-                    List<Appointment> history = new ArrayList<>();
-                    for (Appointment appt : allAppointments) {
-                        Log.d(TAG, "Appointment: " + appt.getTeacherName() + " - Status: " + appt.getStatus());
-                        if ("COMPLETED".equals(appt.getStatus()) || "CANCELLED".equals(appt.getStatus())) {
-                            history.add(appt);
-                        }
+    private void observeViewModel() {
+        // Observe appointments
+        viewModel.getAppointments().observe(getViewLifecycleOwner(), appointments -> {
+            if (appointments != null) {
+                allAppointments = appointments;
+                Log.d(TAG, "Total appointments: " + allAppointments.size());
+                
+                List<Appointment> history = new ArrayList<>();
+                for (Appointment appt : allAppointments) {
+                    Log.d(TAG, "Appointment: " + appt.getTeacherName() + " - Status: " + appt.getStatus());
+                    if ("COMPLETED".equals(appt.getStatus()) || "CANCELLED".equals(appt.getStatus())) {
+                        history.add(appt);
                     }
-                    Log.d(TAG, "History appointments: " + history.size());
-                    
-                    adapter.setAppointments(history);
-                    
-                    // Hiển thị/ẩn empty state
-                    if (history.isEmpty()) {
-                        recyclerView.setVisibility(View.GONE);
-                        emptyStateText.setVisibility(View.VISIBLE);
-                    } else {
-                        recyclerView.setVisibility(View.VISIBLE);
-                        emptyStateText.setVisibility(View.GONE);
-                    }
+                }
+                Log.d(TAG, "History appointments: " + history.size());
+                
+                adapter.setAppointments(history);
+                
+                // Hiển thị/ẩn empty state
+                if (history.isEmpty()) {
+                    recyclerView.setVisibility(View.GONE);
+                    emptyStateText.setVisibility(View.VISIBLE);
                 } else {
-                    Log.e(TAG, "Error response: " + response.code());
-                    Toast.makeText(requireContext(), "Không thể tải lịch hẹn!", Toast.LENGTH_SHORT).show();
+                    recyclerView.setVisibility(View.VISIBLE);
+                    emptyStateText.setVisibility(View.GONE);
                 }
             }
-            @Override
-            public void onFailure(Call<List<Appointment>> call, Throwable t) {
-                Log.e(TAG, "Network error", t);
-                Toast.makeText(requireContext(), "Lỗi kết nối!", Toast.LENGTH_SHORT).show();
+        });
+        
+        // Observe loading state
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            // Có thể hiển thị loading indicator nếu cần
+        });
+        
+        // Observe error messages
+        viewModel.getErrorMessage().observe(getViewLifecycleOwner(), errorMessage -> {
+            if (errorMessage != null && !errorMessage.isEmpty()) {
+                Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show();
             }
         });
     }

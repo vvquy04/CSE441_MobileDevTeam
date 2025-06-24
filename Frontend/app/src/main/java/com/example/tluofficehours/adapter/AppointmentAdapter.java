@@ -163,7 +163,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
         });
         holder.viewDetailsButton.setOnClickListener(v -> {
             Context context = v.getContext();
-            Intent intent = new Intent(context, com.example.tluofficehours.AppointmentDetailActivity.class);
+            Intent intent = new Intent(context, com.example.tluofficehours.view.AppointmentDetailActivity.class);
             intent.putExtra("teacherName", displayName);
             intent.putExtra("department", appt.getDepartment());
             intent.putExtra("avatarUrl", appt.getAvatarUrl());

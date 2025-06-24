@@ -311,7 +311,7 @@ public class StudentProfileActivity extends AppCompatActivity {
                 return true;
             } else if (itemId == R.id.navigation_calendar) {
                 // Navigate to MyAppointmentActivity
-                Intent intent = new Intent(this, com.example.tluofficehours.MyAppointmentActivity.class);
+                Intent intent = new Intent(this, com.example.tluofficehours.view.MyAppointmentActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
                 finish();

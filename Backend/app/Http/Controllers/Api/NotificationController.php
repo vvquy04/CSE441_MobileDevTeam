@@ -31,7 +31,7 @@ class NotificationController extends Controller
         return response()->json(['success' => true]);
     }
 
-    // Tạo notification (dùng cho test/demo)
+    // Tạo notification
     public function store(Request $request)
     {
         $data = $request->validate([

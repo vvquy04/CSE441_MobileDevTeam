@@ -20,19 +20,19 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".AppointmentDetailActivity"
+            android:name=".view.AppointmentDetailActivity"
             android:exported="false" />
         <activity
-            android:name=".BookingSuccessActivity"
+            android:name=".view.BookingSuccessActivity"
             android:exported="false" />
         <activity
-            android:name=".MyAppointmentActivity"
+            android:name=".view.MyAppointmentActivity"
             android:exported="false" />
         <activity
-            android:name=".BookAppointmentActivity"
+            android:name=".view.BookAppointmentActivity"
             android:exported="false" />
         <activity
-            android:name=".FacultyDetailActivity"
+            android:name=".view.FacultyDetailActivity"
             android:exported="false" />
         <activity
             android:name=".NotificationActivity"

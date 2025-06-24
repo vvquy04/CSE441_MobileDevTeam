@@ -4,7 +4,6 @@ import android.util.Log;
 import com.example.tluofficehours.api.ApiService;
 import com.example.tluofficehours.api.RetrofitClient;
 import com.example.tluofficehours.model.StudentProfile;
-import com.example.tluofficehours.model.Teacher;
 import com.example.tluofficehours.utils.FileUtils;
 
 import okhttp3.MultipartBody;
@@ -18,6 +17,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Repository for student profile operations
+ * Handles:
+ * - Getting student profile
+ * - Updating student profile (JSON format)
+ */
 public class StudentProfileRepository {
     private static final String TAG = "StudentProfileRepository";
     private ApiService apiService;
@@ -27,22 +32,45 @@ public class StudentProfileRepository {
     }
 
     public void getStudentProfile(StudentProfileCallback callback) {
-        com.example.tluofficehours.api.RetrofitClient.getApiService().getStudentProfile().enqueue(new Callback<StudentProfile>() {
+        apiService.getStudentProfile().enqueue(new Callback<StudentProfile>() {
             @Override
             public void onResponse(Call<StudentProfile> call, Response<StudentProfile> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     Log.d(TAG, "getStudentProfile success: " + response.body().toString());
                     callback.onSuccess(response.body());
                 } else {
-                    Log.e(TAG, "getStudentProfile error: " + response.code() + " - " + response.message());
-                    callback.onError("Không thể lấy thông tin profile sinh viên");
+                    String errorMessage = "Failed to get student profile";
+                    if (response.code() == 401) {
+                        errorMessage = "Unauthorized. Please login again.";
+                    } else if (response.code() == 403) {
+                        errorMessage = "Access denied. User is not a student.";
+                    } else if (response.code() == 404) {
+                        errorMessage = "Student profile not found.";
+                    } else if (response.errorBody() != null) {
+                        try {
+                            String errorBody = response.errorBody().string();
+                            errorMessage = "Error: " + errorBody;
+                        } catch (Exception e) {
+                            errorMessage = "Error: " + response.message();
+                        }
+                    }
+                    Log.e(TAG, errorMessage);
+                    callback.onError(errorMessage);
                 }
             }
 
             @Override
             public void onFailure(Call<StudentProfile> call, Throwable t) {
-                Log.e(TAG, "getStudentProfile failure: " + t.getMessage());
-                callback.onError("Lỗi kết nối: " + t.getMessage());
+                String errorMessage = "Network error: " + t.getMessage();
+                if (t instanceof java.net.UnknownHostException) {
+                    errorMessage = "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet.";
+                } else if (t instanceof java.net.SocketTimeoutException) {
+                    errorMessage = "Kết nối bị timeout. Vui lòng thử lại.";
+                } else if (t instanceof javax.net.ssl.SSLHandshakeException) {
+                    errorMessage = "Lỗi bảo mật kết nối. Vui lòng thử lại.";
+                }
+                Log.e(TAG, errorMessage);
+                callback.onError(errorMessage);
             }
         });
     }
@@ -93,49 +121,42 @@ public class StudentProfileRepository {
     */
 
     public void updateStudentProfileJson(String studentName, String phoneNumber, String className, UpdateStudentProfileCallback callback) {
-        Log.d(TAG, "updateStudentProfileJson called with: name=" + studentName + ", phone=" + phoneNumber + ", class=" + className);
+        Log.d(TAG, "updateStudentProfileJson called with: name=" + studentName + 
+            ", phone=" + phoneNumber + ", class=" + className);
         
-        Map<String, String> profileData = new HashMap<>();
-        profileData.put("StudentName", studentName);
-        profileData.put("PhoneNumber", phoneNumber);
-        profileData.put("ClassName", className);
+        Map<String, String> profileData = Map.of(
+            "StudentName", studentName,
+            "PhoneNumber", phoneNumber,
+            "ClassName", className
+        );
         
-        Call<ResponseBody> call = apiService.updateStudentProfileJson(profileData);
-        call.enqueue(new Callback<ResponseBody>() {
+        apiService.updateStudentProfileJson(profileData).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                Log.d(TAG, "updateStudentProfileJson response: " + response.code() + " - " + response.message());
                 if (response.isSuccessful()) {
                     Log.d(TAG, "updateStudentProfileJson success");
-                    callback.onSuccess("Cập nhật thông tin thành công");
+                    callback.onSuccess("Profile updated successfully");
                 } else {
-                    String errorBody = "";
-                    try {
-                        if (response.errorBody() != null) {
-                            errorBody = response.errorBody().string();
+                    String errorMessage = "Failed to update profile";
+                    if (response.errorBody() != null) {
+                        try {
+                            String errorBody = response.errorBody().string();
+                            errorMessage = "Error: " + errorBody;
+                        } catch (Exception e) {
+                            errorMessage = "Error: " + response.message();
                         }
-                    } catch (Exception e) {
-                        errorBody = "Unknown error";
                     }
-                    Log.e(TAG, "updateStudentProfileJson error: " + response.code() + " - " + errorBody);
-                    callback.onError("Không thể cập nhật thông tin: " + response.code());
+                    Log.e(TAG, errorMessage);
+                    callback.onError(errorMessage);
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Log.e(TAG, "updateStudentProfileJson failure: " + t.getMessage());
-                callback.onError("Lỗi kết nối: " + t.getMessage());
+                callback.onError("Network error: " + t.getMessage());
             }
         });
-    }
-
-    public void searchTeachers(String query, Callback<List<Teacher>> callback) {
-        com.example.tluofficehours.api.RetrofitClient.getApiService().searchTeachers(query).enqueue(callback);
-    }
-
-    public void getTeacherDetail(String facultyUserId, Callback<Teacher> callback) {
-        com.example.tluofficehours.api.RetrofitClient.getApiService().getTeacherDetail(facultyUserId).enqueue(callback);
     }
 
     public interface StudentProfileCallback {

@@ -1,5 +1,5 @@
 // BookAppointmentActivity.java
-package com.example.tluofficehours; // Thay bằng tên package của bạn
+package com.example.tluofficehours.view; // Updated package
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -14,12 +14,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
+import com.example.tluofficehours.R;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.ViewModelProvider;
 
-import com.example.tluofficehours.api.ApiService;
-import com.example.tluofficehours.model.TimeSlot;
+import com.example.tluofficehours.model.AvailableSlot;
+import com.example.tluofficehours.viewmodel.AppointmentViewModel;
 import com.google.android.material.button.MaterialButton;
 
 import java.time.DayOfWeek;
@@ -33,12 +36,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
-
 public class BookAppointmentActivity extends AppCompatActivity {
 
     private TextView currentMonthYear;
@@ -48,7 +45,7 @@ public class BookAppointmentActivity extends AppCompatActivity {
     private Button cancelButton;
 
     private LocalDate selectedDate;
-    private TimeSlot selectedTimeSlot;
+    private AvailableSlot selectedAvailableSlot;
     private String facultyUserId;
     private String facultyName;
     private String officeLocation;
@@ -58,7 +55,7 @@ public class BookAppointmentActivity extends AppCompatActivity {
     private DateTimeFormatter dateFormatter;
     private DateTimeFormatter monthYearFormatter;
 
-    private ApiService apiService;
+    private AppointmentViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,7 +97,12 @@ public class BookAppointmentActivity extends AppCompatActivity {
 
         // Gán selectedDate mặc định là ngày hôm nay
         selectedDate = LocalDate.now();
-        apiService = com.example.tluofficehours.api.RetrofitClient.getApiService();
+        
+        // Initialize ViewModel
+        viewModel = new ViewModelProvider(this).get(AppointmentViewModel.class);
+        
+        // Observe data changes
+        observeViewModel();
         
         // Xử lý chuyển tháng
         prevMonthButton.setOnClickListener(v -> {
@@ -116,46 +118,12 @@ public class BookAppointmentActivity extends AppCompatActivity {
 
         // Xử lý nút Xác nhận
         confirmButton.setOnClickListener(v -> {
-            if (selectedDate != null && selectedTimeSlot != null) {
-                java.util.Map<String, Object> bookingData = new java.util.HashMap<>();
-                bookingData.put("SlotId", selectedTimeSlot.getId());
+            if (selectedDate != null && selectedAvailableSlot != null) {
+                Map<String, Object> bookingData = new HashMap<>();
+                bookingData.put("SlotId", selectedAvailableSlot.getSlotId());
                 bookingData.put("Purpose", "Đặt lịch hẹn"); // Có thể lấy từ EditText nếu muốn
 
-                Call<okhttp3.ResponseBody> call = apiService.bookAppointment(bookingData);
-                call.enqueue(new Callback<okhttp3.ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<okhttp3.ResponseBody> call, Response<okhttp3.ResponseBody> response) {
-                        if (response.isSuccessful()) {
-                            Intent intent = new Intent(BookAppointmentActivity.this, BookingSuccessActivity.class);
-                            // Truyền thông tin cần thiết qua intent
-                            intent.putExtra("teacherName", facultyName);
-                            DateTimeFormatter outputDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-                            String formattedDate = selectedDate.format(outputDateFormatter);
-                            intent.putExtra("date", formattedDate);
-                            intent.putExtra("time", selectedTimeSlot.getTime());
-                            intent.putExtra("room", officeLocation);
-                            intent.putExtra("contactEmail", contactEmail);
-                            intent.putExtra("memberCount", 1); // Assuming memberCount is 1 for now
-                            intent.putExtra("purpose", "Đặt lịch hẹn");
-                            startActivity(intent);
-                            finish();
-                        } else {
-                            android.util.Log.e("BookAppointment", "Error: " + response.code());
-                            try {
-                                if (response.errorBody() != null) {
-                                    android.util.Log.e("BookAppointment", "Body: " + response.errorBody().string());
-                                }
-                            } catch (Exception e) {
-                                android.util.Log.e("BookAppointment", "Error reading errorBody", e);
-                            }
-                            Toast.makeText(BookAppointmentActivity.this, "Đặt lịch thất bại!", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    @Override
-                    public void onFailure(Call<okhttp3.ResponseBody> call, Throwable t) {
-                        Toast.makeText(BookAppointmentActivity.this, "Lỗi kết nối!", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                viewModel.bookAppointment(bookingData);
             } else {
                 Toast.makeText(this, "Vui lòng chọn ngày và giờ đặt lịch.", Toast.LENGTH_SHORT).show();
             }
@@ -168,6 +136,47 @@ public class BookAppointmentActivity extends AppCompatActivity {
         displayCalendar();
         // Gọi API lấy slot cho ngày hôm nay
         fetchAvailableSlotsForDate(selectedDate);
+    }
+
+    private void observeViewModel() {
+        // Observe available slots
+        viewModel.getAvailableSlots().observe(this, slots -> {
+            if (slots != null) {
+                displayTimeSlotsFromApi(slots);
+            }
+        });
+        
+        // Observe loading state
+        viewModel.getIsLoading().observe(this, isLoading -> {
+            // Có thể hiển thị loading indicator nếu cần
+        });
+        
+        // Observe error messages
+        viewModel.getErrorMessage().observe(this, errorMessage -> {
+            if (errorMessage != null && !errorMessage.isEmpty()) {
+                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        });
+        
+        // Observe booking success
+        viewModel.getBookingSuccess().observe(this, success -> {
+            if (success) {
+                Intent intent = new Intent(BookAppointmentActivity.this, BookingSuccessActivity.class);
+                // Truyền thông tin cần thiết qua intent
+                intent.putExtra("teacherName", facultyName);
+                DateTimeFormatter outputDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                String formattedDate = selectedDate.format(outputDateFormatter);
+                intent.putExtra("date", formattedDate);
+                // Sử dụng method getTimeDisplay() để lấy chuỗi thời gian
+                intent.putExtra("time", selectedAvailableSlot.getTimeDisplay());
+                intent.putExtra("room", officeLocation);
+                intent.putExtra("contactEmail", contactEmail);
+                intent.putExtra("memberCount", 1); // Assuming memberCount is 1 for now
+                intent.putExtra("purpose", "Đặt lịch hẹn");
+                startActivity(intent);
+                finish();
+            }
+        });
     }
 
     private void displayCalendar() {
@@ -204,7 +213,9 @@ public class BookAppointmentActivity extends AppCompatActivity {
             TextView dayView = new TextView(this);
             GridLayout.LayoutParams params = new GridLayout.LayoutParams();
             params.width = 0;
-            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            // Đặt kích thước cố định để tạo hình tròn hoàn hảo
+            int daySize = (int) (40 * getResources().getDisplayMetrics().density);
+            params.height = daySize;
             params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
             params.rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
             params.setMargins(0, (int) (8 * getResources().getDisplayMetrics().density),
@@ -261,55 +272,57 @@ public class BookAppointmentActivity extends AppCompatActivity {
     }
 
     private void clearTimeSlots() {
+        // Reset trạng thái chọn của slot cũ
+        if (selectedAvailableSlot != null && selectedAvailableSlot.getButtonView() != null) {
+            selectedAvailableSlot.getButtonView().setSelected(false);
+            selectedAvailableSlot.setSelected(false);
+        }
         timeSlotsGrid.removeAllViews();
-        selectedTimeSlot = null;
+        selectedAvailableSlot = null;
     }
 
     private void fetchAvailableSlotsForDate(LocalDate date) {
+        selectedDate = date;
         clearTimeSlots();
         String dateStr = date.toString(); // yyyy-MM-dd
-        Call<List<TimeSlot>> call = apiService.getAvailableSlots(facultyUserId, dateStr);
-        call.enqueue(new Callback<List<TimeSlot>>() {
-            @Override
-            public void onResponse(Call<List<TimeSlot>> call, Response<List<TimeSlot>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    List<TimeSlot> slots = response.body();
-                    displayTimeSlotsFromApi(slots);
-                } else {
-                    showNoSlotsMessage();
-                }
-            }
-            @Override
-            public void onFailure(Call<List<TimeSlot>> call, Throwable t) {
-                showNoSlotsMessage();
-            }
-        });
+        viewModel.fetchAvailableSlots(facultyUserId, dateStr);
     }
 
-    private void displayTimeSlotsFromApi(List<TimeSlot> slots) {
+    private void displayTimeSlotsFromApi(List<AvailableSlot> slots) {
         if (slots == null || slots.isEmpty()) {
             showNoSlotsMessage();
             return;
         }
-        for (TimeSlot slot : slots) {
-            MaterialButton timeButton = new MaterialButton(this);
-            timeButton.setText(slot.getTime());
+        
+        for (AvailableSlot slot : slots) {
+            Button timeButton = new Button(this);
+            // Sử dụng method getTimeDisplay() để lấy chuỗi thời gian
+            timeButton.setText(slot.getTimeDisplay());
             timeButton.setTag(slot);
-            timeButton.setCheckable(true);
-            switch (slot.getStatus()) {
-                case AVAILABLE:
-                    timeButton.setEnabled(true);
-                    timeButton.setOnClickListener(v -> showBookingInfoDialog(slot));
-                    break;
-                case BOOKED:
-                    timeButton.setEnabled(false);
-                    timeButton.setOnClickListener(v -> showBookedDialog());
-                    break;
-                case UNAVAILABLE:
-                    timeButton.setEnabled(false);
-                    timeButton.setOnClickListener(v -> showUnavailableDialog());
-                    break;
+            
+            // Kiểm tra trạng thái available
+            if (slot.isAvailable()) {
+                timeButton.setEnabled(true);
+                timeButton.setOnClickListener(v -> {
+                    // Hủy chọn slot cũ (nếu có)
+                    if (selectedAvailableSlot != null && selectedAvailableSlot.getButtonView() != null) {
+                        selectedAvailableSlot.getButtonView().setSelected(false);
+                        selectedAvailableSlot.setSelected(false);
+                    }
+                    
+                    // Chọn slot mới
+                    selectedAvailableSlot = slot;
+                    slot.setSelected(true);
+                    slot.setButtonView(timeButton);
+                    timeButton.setSelected(true);
+                    
+                    showBookingInfoDialog(slot);
+                });
+            } else {
+                timeButton.setEnabled(false);
+                timeButton.setOnClickListener(v -> showUnavailableDialog());
             }
+            
             timeButton.setTextAppearance(R.style.TimeSlotButton);
             GridLayout.LayoutParams params = new GridLayout.LayoutParams();
             params.width = 0;
@@ -337,50 +350,18 @@ public class BookAppointmentActivity extends AppCompatActivity {
     }
 
     // Gọi API đặt lịch với thông tin nhập
-    private void bookSlot(TimeSlot slot, int memberCount, String reason) {
+    private void bookSlot(AvailableSlot slot, int memberCount, String reason) {
         java.util.Map<String, Object> bookingData = new java.util.HashMap<>();
-        bookingData.put("SlotId", slot.getId());
+        bookingData.put("SlotId", slot.getSlotId());
         bookingData.put("Purpose", reason);
         if (slot.getMaxStudents() > 1) {
             bookingData.put("MemberCount", memberCount);
         }
-        apiService.bookAppointment(bookingData).enqueue(new retrofit2.Callback<okhttp3.ResponseBody>() {
-            @Override
-            public void onResponse(retrofit2.Call<okhttp3.ResponseBody> call, retrofit2.Response<okhttp3.ResponseBody> response) {
-                if (response.isSuccessful()) {
-                    Intent intent = new Intent(BookAppointmentActivity.this, BookingSuccessActivity.class);
-                    intent.putExtra("teacherName", facultyName);
-                    DateTimeFormatter outputDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-                    String formattedDate = selectedDate.format(outputDateFormatter);
-                    intent.putExtra("date", formattedDate);
-                    intent.putExtra("time", slot.getTime());
-                    intent.putExtra("room", officeLocation);
-                    intent.putExtra("contactEmail", contactEmail);
-                    intent.putExtra("memberCount", memberCount);
-                    intent.putExtra("purpose", reason);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    android.util.Log.e("BookAppointment", "Error: " + response.code());
-                    try {
-                        if (response.errorBody() != null) {
-                            android.util.Log.e("BookAppointment", "Body: " + response.errorBody().string());
-                        }
-                    } catch (Exception e) {
-                        android.util.Log.e("BookAppointment", "Error reading errorBody", e);
-                    }
-                    Toast.makeText(BookAppointmentActivity.this, "Đặt lịch thất bại!", Toast.LENGTH_SHORT).show();
-                }
-            }
-            @Override
-            public void onFailure(retrofit2.Call<okhttp3.ResponseBody> call, Throwable t) {
-                Toast.makeText(BookAppointmentActivity.this, "Lỗi kết nối!", Toast.LENGTH_SHORT).show();
-            }
-        });
+        viewModel.bookAppointment(bookingData);
     }
 
     // Hiển thị dialog nhập thông tin đặt lịch
-    private void showBookingInfoDialog(TimeSlot slot) {
+    private void showBookingInfoDialog(AvailableSlot slot) {
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
         builder.setTitle("Nhập thông tin đặt lịch");
         android.widget.LinearLayout layout = new android.widget.LinearLayout(this);

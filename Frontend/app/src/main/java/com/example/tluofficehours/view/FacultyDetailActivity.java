@@ -1,26 +1,30 @@
-package com.example.tluofficehours;
+package com.example.tluofficehours.view;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
-import com.example.tluofficehours.api.ApiService;
-import com.example.tluofficehours.api.RetrofitClient;
-import com.example.tluofficehours.model.Teacher;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import com.example.tluofficehours.R;
+import com.example.tluofficehours.model.FacultyProfile;
+import com.example.tluofficehours.viewmodel.TeacherViewModel;
 
 public class FacultyDetailActivity extends AppCompatActivity {
+
+    private TeacherViewModel viewModel;
+    private TextView teacherName, teacherDepartment, detailDepartment, detailDegree, detailPhone, detailEmail, detailOffice;
+    private ImageView teacherBackgroundImageView;
+    private String facultyUserId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,26 +39,31 @@ public class FacultyDetailActivity extends AppCompatActivity {
 
         // Lấy thông tin giảng viên từ Intent
         Intent intent = getIntent();
-        String facultyUserId = intent.getStringExtra("facultyUserId");
+        facultyUserId = intent.getStringExtra("facultyUserId");
         String facultyName = intent.getStringExtra("facultyName");
         String degree = intent.getStringExtra("degree");
         String phoneNumber = intent.getStringExtra("phoneNumber");
         String officeLocation = intent.getStringExtra("officeLocation");
-        String departmentName = intent.getStringExtra("departmentName");
-        String avatarUrl = intent.getStringExtra("avatarUrl");
-        String email = intent.getStringExtra("email");
+        String departmentId = intent.getStringExtra("departmentId");
+        String avatar = intent.getStringExtra("avatar");
 
         // Ánh xạ các view
         ImageView backButton = findViewById(R.id.backButton);
-        ImageView teacherBackgroundImageView = findViewById(R.id.teacherBackgroundImageView);
-        TextView teacherName = findViewById(R.id.teacherName);
-        TextView teacherDepartment = findViewById(R.id.teacherDepartment);
-        TextView detailDepartment = findViewById(R.id.detailDepartment);
-        TextView detailDegree = findViewById(R.id.detailDegree);
-        TextView detailPhone = findViewById(R.id.detailPhone);
-        TextView detailEmail = findViewById(R.id.detailEmail);
-        TextView detailOffice = findViewById(R.id.detailOffice);
+        teacherBackgroundImageView = findViewById(R.id.teacherBackgroundImageView);
+        teacherName = findViewById(R.id.teacherName);
+        teacherDepartment = findViewById(R.id.teacherDepartment);
+        detailDepartment = findViewById(R.id.detailDepartment);
+        detailDegree = findViewById(R.id.detailDegree);
+        detailPhone = findViewById(R.id.detailPhone);
+        detailEmail = findViewById(R.id.detailEmail);
+        detailOffice = findViewById(R.id.detailOffice);
         Button bookAppointmentButton = findViewById(R.id.bookAppointmentButton);
+
+        // Initialize ViewModel
+        viewModel = new ViewModelProvider(this).get(TeacherViewModel.class);
+        
+        // Observe data changes
+        observeViewModel();
 
         // Nếu có thông tin từ Intent thì hiển thị tạm
         String displayName = facultyName;
@@ -62,52 +71,26 @@ public class FacultyDetailActivity extends AppCompatActivity {
             displayName = degree + ". " + facultyName;
         }
         teacherName.setText(displayName != null ? displayName : "");
-        teacherDepartment.setText(departmentName != null ? ("Bộ môn " + departmentName) : "");
-        detailDepartment.setText(departmentName != null ? departmentName : "");
+        teacherDepartment.setText(departmentId != null ? ("Bộ môn " + departmentId) : "");
+        detailDepartment.setText(departmentId != null ? departmentId : "");
         detailDegree.setText(degree != null ? degree : "");
         detailPhone.setText(phoneNumber != null ? phoneNumber : "");
-        detailEmail.setText(email != null ? email : "");
+        detailEmail.setText(""); // FacultyProfile không có email field
         detailOffice.setText(officeLocation != null ? officeLocation : "");
-        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+        if (avatar != null && !avatar.isEmpty()) {
             Glide.with(this)
-                .load(avatarUrl)
+                .load(avatar)
                 .placeholder(R.drawable.teacher_placeholder)
                 .error(R.drawable.teacher_placeholder)
                 .into(teacherBackgroundImageView);
         }
 
-        // Gọi API lấy chi tiết giảng viên nếu có facultyUserId
+        // Load teacher details using ViewModel if facultyUserId is available
         if (facultyUserId != null && !facultyUserId.isEmpty()) {
-            ApiService apiService = RetrofitClient.getApiService();
-            apiService.getTeacherDetail(facultyUserId).enqueue(new Callback<Teacher>() {
-                @Override
-                public void onResponse(Call<Teacher> call, Response<Teacher> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        Teacher teacher = response.body();
-                        String displayName = teacher.getDegree() != null && !teacher.getDegree().isEmpty()
-                                ? teacher.getDegree() + ". " + teacher.getFacultyName()
-                                : teacher.getFacultyName();
-                        teacherName.setText(displayName != null ? displayName : "");
-                        teacherDepartment.setText(teacher.getDepartmentName() != null ? ("Bộ môn " + teacher.getDepartmentName()) : "");
-                        detailDepartment.setText(teacher.getDepartmentName() != null ? teacher.getDepartmentName() : "");
-                        detailDegree.setText(teacher.getDegree() != null ? teacher.getDegree() : "");
-                        detailPhone.setText(teacher.getPhoneNumber() != null ? teacher.getPhoneNumber() : "");
-                        detailEmail.setText(teacher.getEmail() != null ? teacher.getEmail() : "");
-                        detailOffice.setText(teacher.getOfficeLocation() != null ? teacher.getOfficeLocation() : "");
-                        if (teacher.getAvatarUrl() != null && !teacher.getAvatarUrl().isEmpty()) {
-                            Glide.with(FacultyDetailActivity.this)
-                                .load(teacher.getAvatarUrl())
-                                .placeholder(R.drawable.teacher_placeholder)
-                                .error(R.drawable.teacher_placeholder)
-                                .into(teacherBackgroundImageView);
-                        }
-                    }
-                }
-                @Override
-                public void onFailure(Call<Teacher> call, Throwable t) {
-                    // Có thể hiển thị thông báo lỗi nếu muốn
-                }
-            });
+            android.util.Log.d("FacultyDetailActivity", "Loading teacher detail for facultyUserId: " + facultyUserId);
+            viewModel.loadTeacherDetail(facultyUserId);
+        } else {
+            android.util.Log.w("FacultyDetailActivity", "facultyUserId is null or empty");
         }
 
         // Xử lý nút back
@@ -121,6 +104,54 @@ public class FacultyDetailActivity extends AppCompatActivity {
             bookIntent.putExtra("officeLocation", detailOffice.getText().toString());
             bookIntent.putExtra("email", detailEmail.getText().toString());
             startActivity(bookIntent);
+        });
+    }
+    
+    private void observeViewModel() {
+        // Observe teacher details
+        viewModel.getTeacherDetail().observe(this, teacher -> {
+            if (teacher != null) {
+                android.util.Log.d("FacultyDetailActivity", "Teacher detail loaded: " + teacher.getFacultyName());
+                android.util.Log.d("FacultyDetailActivity", "Department name: " + teacher.getDepartmentName());
+                android.util.Log.d("FacultyDetailActivity", "Email: " + teacher.getEmail());
+                
+                String displayName = teacher.getDegree() != null && !teacher.getDegree().isEmpty()
+                        ? teacher.getDegree() + ". " + teacher.getFacultyName()
+                        : teacher.getFacultyName();
+                teacherName.setText(displayName != null ? displayName : "");
+                
+                // Sử dụng department_name thay vì department_id
+                String deptText = teacher.getDepartmentName() != null ? ("Bộ môn " + teacher.getDepartmentName()) : "";
+                teacherDepartment.setText(deptText);
+                detailDepartment.setText(teacher.getDepartmentName() != null ? teacher.getDepartmentName() : "");
+                
+                detailDegree.setText(teacher.getDegree() != null ? teacher.getDegree() : "");
+                detailPhone.setText(teacher.getPhoneNumber() != null ? teacher.getPhoneNumber() : "");
+                detailEmail.setText(teacher.getEmail() != null ? teacher.getEmail() : "");
+                detailOffice.setText(teacher.getOfficeLocation() != null ? teacher.getOfficeLocation() : "");
+                
+                if (teacher.getAvatar() != null && !teacher.getAvatar().isEmpty()) {
+                    Glide.with(this)
+                        .load(teacher.getAvatar())
+                        .placeholder(R.drawable.teacher_placeholder)
+                        .error(R.drawable.teacher_placeholder)
+                        .into(teacherBackgroundImageView);
+                }
+            } else {
+                android.util.Log.w("FacultyDetailActivity", "Teacher detail is null");
+            }
+        });
+        
+        // Observe loading state
+        viewModel.getIsLoading().observe(this, isLoading -> {
+            // Có thể hiển thị loading indicator nếu cần
+        });
+        
+        // Observe error messages
+        viewModel.getErrorMessage().observe(this, errorMessage -> {
+            if (errorMessage != null && !errorMessage.isEmpty()) {
+                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show();
+            }
         });
     }
 }

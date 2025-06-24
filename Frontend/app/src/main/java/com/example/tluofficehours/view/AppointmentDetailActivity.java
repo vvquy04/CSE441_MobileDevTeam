@@ -1,4 +1,4 @@
-package com.example.tluofficehours;
+package com.example.tluofficehours.view;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -10,8 +10,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
+import com.example.tluofficehours.R;
+import com.example.tluofficehours.viewmodel.AppointmentViewModel;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class AppointmentDetailActivity extends AppCompatActivity {
@@ -26,12 +29,16 @@ public class AppointmentDetailActivity extends AppCompatActivity {
     private TextView appointmentRoom;
     private TextView cancellationReasonText;
     private Button cancelAppointmentButton;
+    private AppointmentViewModel viewModel;
 
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_appointment_detail);
+
+        // Initialize ViewModel
+        viewModel = new ViewModelProvider(this).get(AppointmentViewModel.class);
 
         // Ánh xạ các View
         closeButton = findViewById(R.id.closeButton);
@@ -45,6 +52,22 @@ public class AppointmentDetailActivity extends AppCompatActivity {
         cancellationReasonText = findViewById(R.id.cancellationReason);
         cancelAppointmentButton = findViewById(R.id.cancelAppointmentButton);
 
+        // Nhận dữ liệu từ Intent và hiển thị
+        loadAppointmentData();
+
+        // Observe ViewModel data
+        observeViewModel();
+
+        // Xử lý sự kiện cho nút Đóng (X)
+        closeButton.setOnClickListener(v -> {
+            finish();
+        });
+
+        // Xử lý sự kiện cho nút Hủy lịch hẹn
+        cancelAppointmentButton.setOnClickListener(v -> showCancelDialog());
+    }
+
+    private void loadAppointmentData() {
         // Nhận dữ liệu từ Intent
         Intent intent = getIntent();
         if (intent != null) {
@@ -121,14 +144,34 @@ public class AppointmentDetailActivity extends AppCompatActivity {
             appointmentRoom.setText("Không có thông tin");
             teacherAvatar.setImageResource(R.drawable.teacher_placeholder);
         }
+    }
 
-        // Xử lý sự kiện cho nút Đóng (X)
-        closeButton.setOnClickListener(v -> {
-            finish();
+    private void observeViewModel() {
+        // Observe loading state
+        viewModel.getIsLoading().observe(this, isLoading -> {
+            if (isLoading) {
+                cancelAppointmentButton.setEnabled(false);
+                cancelAppointmentButton.setText("Đang hủy...");
+            } else {
+                cancelAppointmentButton.setEnabled(true);
+                cancelAppointmentButton.setText("Hủy lịch hẹn");
+            }
         });
 
-        // Xử lý sự kiện cho nút Hủy lịch hẹn
-        cancelAppointmentButton.setOnClickListener(v -> showCancelDialog());
+        // Observe error messages
+        viewModel.getErrorMessage().observe(this, errorMessage -> {
+            if (errorMessage != null && !errorMessage.isEmpty()) {
+                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Observe cancel success
+        viewModel.getCancelSuccess().observe(this, success -> {
+            if (success) {
+                Toast.makeText(this, "Đã hủy lịch thành công!", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        });
     }
 
     @SuppressLint("ResourceType")
@@ -144,7 +187,7 @@ public class AppointmentDetailActivity extends AppCompatActivity {
             if (reason.isEmpty()) {
                 android.widget.Toast.makeText(this, "Vui lòng nhập lý do hủy!", android.widget.Toast.LENGTH_SHORT).show();
             } else {
-                // Gọi hàm hủy lịch với lý do
+                // Gọi ViewModel để hủy lịch
                 cancelAppointment(reason);
             }
         });
@@ -161,23 +204,8 @@ public class AppointmentDetailActivity extends AppCompatActivity {
             Toast.makeText(this, "Không tìm thấy mã lịch hẹn!", Toast.LENGTH_SHORT).show();
             return;
         }
-        com.example.tluofficehours.api.ApiService apiService = com.example.tluofficehours.api.RetrofitClient.getApiService();
-        java.util.Map<String, String> body = new java.util.HashMap<>();
-        body.put("reason", reason);
-        apiService.cancelAppointment(appointmentId, body).enqueue(new retrofit2.Callback<okhttp3.ResponseBody>() {
-            @Override
-            public void onResponse(retrofit2.Call<okhttp3.ResponseBody> call, retrofit2.Response<okhttp3.ResponseBody> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(AppointmentDetailActivity.this, "Đã hủy lịch thành công!", Toast.LENGTH_SHORT).show();
-                    finish();
-                } else {
-                    Toast.makeText(AppointmentDetailActivity.this, "Hủy lịch thất bại!", Toast.LENGTH_SHORT).show();
-                }
-            }
-            @Override
-            public void onFailure(retrofit2.Call<okhttp3.ResponseBody> call, Throwable t) {
-                Toast.makeText(AppointmentDetailActivity.this, "Lỗi kết nối!", Toast.LENGTH_SHORT).show();
-            }
-        });
+        
+        // Gọi ViewModel thay vì API trực tiếp
+        viewModel.cancelAppointment(appointmentId, reason);
     }
 }
