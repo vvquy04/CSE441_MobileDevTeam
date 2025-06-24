@@ -1,83 +1,52 @@
 package com.example.tluofficehours.model;
 
-import java.io.Serializable;
+import com.google.gson.annotations.SerializedName;
 
-public class Notification implements Serializable {
-    private String id;
+public class Notification {
+    @SerializedName("id")
+    private long id;
+
+    @SerializedName("title")
     private String title;
+
+    @SerializedName("message")
     private String message;
-    private String date;
-    private String time;
-    private String type; // "booking", "reminder", "system", etc.
+
+    @SerializedName("type")
+    private String type;
+
+    @SerializedName("is_read")
     private boolean isRead;
 
-    public Notification() {
-    }
+    @SerializedName("created_at")
+    private String createdAt;
 
-    public Notification(String id, String title, String message, String date, String time, String type) {
+    public Notification(long id, String title, String message, String type, boolean isRead, String createdAt) {
         this.id = id;
         this.title = title;
         this.message = message;
-        this.date = date;
-        this.time = time;
         this.type = type;
-        this.isRead = false;
+        this.isRead = isRead;
+        this.createdAt = createdAt;
     }
 
-    // Getters and Setters
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
+    public long getId() { return id; }
+    public String getTitle() { return title; }
+    public String getMessage() { return message; }
+    public String getType() { return type; }
+    public boolean isRead() { return isRead; }
+    public String getCreatedAt() { return createdAt; }
 
     public String getDate() {
-        return date;
+        if (createdAt != null && createdAt.length() >= 10) {
+            return createdAt.substring(0, 10);
+        }
+        return createdAt;
     }
-
-    public void setDate(String date) {
-        this.date = date;
-    }
-
     public String getTime() {
-        return time;
-    }
-
-    public void setTime(String time) {
-        this.time = time;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public boolean isRead() {
-        return isRead;
-    }
-
-    public void setRead(boolean read) {
-        isRead = read;
+        if (createdAt != null && createdAt.length() >= 16) {
+            return createdAt.substring(11, 16);
+        }
+        return "";
     }
 } 

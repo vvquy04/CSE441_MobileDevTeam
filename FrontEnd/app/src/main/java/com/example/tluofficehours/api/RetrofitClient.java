@@ -43,47 +43,18 @@ public class RetrofitClient {
             // Add authentication interceptor
             Interceptor authInterceptor = chain -> {
                 Request original = chain.request();
-                
-                // Get token from SharedPreferences
-                String token = null;
-                if (context != null) {
+                Request.Builder builder = original.newBuilder();
+                // Lấy token từ SharedPreferences hoặc biến authToken
+                String token = authToken;
+                if ((token == null || token.isEmpty()) && context != null) {
                     SharedPreferences prefs = context.getSharedPreferences("TLUOfficeHours", Context.MODE_PRIVATE);
                     token = prefs.getString("auth_token", null);
-                    Log.d("RetrofitClient", "Token from SharedPreferences: " + (token != null ? "EXISTS" : "NULL"));
                 }
-                
-                Request.Builder requestBuilder = original.newBuilder();
-                
-                // Add Authorization header if token exists
-                if (token != null) {
-                    requestBuilder.addHeader("Authorization", "Bearer " + token);
-                    Log.d("RetrofitClient", "Added Authorization header with token");
-                    Log.d("RetrofitClient", "Request URL: " + original.url());
-                    Log.d("RetrofitClient", "Authorization header: Bearer " + token.substring(0, Math.min(20, token.length())) + "...");
-                } else {
-                    Log.w("RetrofitClient", "No token found, request will be unauthenticated");
-                    Log.w("RetrofitClient", "Request URL: " + original.url());
+                if (token != null && !token.isEmpty()) {
+                    builder.addHeader("Authorization", "Bearer " + token);
                 }
-                // Add Accept header for all requests
-                requestBuilder.addHeader("Accept", "application/json");
-                
-                Request request = requestBuilder.build();
-//
-            // Create auth interceptor
-            Interceptor authInterceptor = chain -> {
-                Request original = chain.request();
-                Request.Builder builder = original.newBuilder();
-                
-                if (authToken != null && !authToken.isEmpty()) {
-                    builder.addHeader("Authorization", "Bearer " + authToken);
-                    android.util.Log.d("RetrofitClient", "Adding Authorization header: Bearer " + authToken);
-                } else {
-                    android.util.Log.w("RetrofitClient", "No auth token available for request: " + original.url());
-                }
-                android.util.Log.d("RetrofitClient", "Request URL: " + original.url());
-                android.util.Log.d("RetrofitClient", "Request Headers: " + builder.build().headers());
+                builder.addHeader("Accept", "application/json");
                 Request request = builder.build();
-// vanquy_refactor
                 return chain.proceed(request);
             };
 

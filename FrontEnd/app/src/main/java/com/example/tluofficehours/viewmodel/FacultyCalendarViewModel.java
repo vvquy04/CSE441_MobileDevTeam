@@ -9,7 +9,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.tluofficehours.api.FacultyApiService;
+import com.example.tluofficehours.api.ApiService;
 import com.example.tluofficehours.model.Booking;
 import com.example.tluofficehours.repository.FacultyRepository;
 
@@ -25,7 +25,7 @@ public class FacultyCalendarViewModel extends AndroidViewModel {
     private static final String TAG = "FacultyCalendarViewModel";
     private FacultyRepository repository;
 
-    private final MutableLiveData<FacultyApiService.BookingsByWeekResponse> allBookingsInPeriod = new MutableLiveData<>();
+    private final MutableLiveData<ApiService.BookingsByWeekResponse> allBookingsInPeriod = new MutableLiveData<>();
 
     // LiveData chứa TẤT CẢ các cuộc hẹn đã tải về từ API (ví dụ: cho cả tuần)
     private final MutableLiveData<List<Booking>> allBookingsList = new MutableLiveData<>();
@@ -46,7 +46,7 @@ public class FacultyCalendarViewModel extends AndroidViewModel {
 
     public FacultyCalendarViewModel(@NonNull Application application) {
         super(application);
-        repository = new FacultyRepository(application);
+        repository = new FacultyRepository();
 
         // Logic của MediatorLiveData:
         // Sẽ gọi hàm applyFilters mỗi khi một trong 3 LiveData nguồn thay đổi
@@ -61,7 +61,7 @@ public class FacultyCalendarViewModel extends AndroidViewModel {
     public LiveData<Boolean> getIsLoading() { return isLoading; }
     public LiveData<String> getSuccessMessage() { return successMessage; }
     public LiveData<List<Date>> getEventDays() { return eventDays; }
-    public LiveData<FacultyApiService.BookingsByWeekResponse> getAllBookingsInPeriod() { return allBookingsInPeriod; }
+    public LiveData<ApiService.BookingsByWeekResponse> getAllBookingsInPeriod() { return allBookingsInPeriod; }
 
     /**
      * Tải tất cả lịch hẹn trong một khoảng thời gian nhất định (ví dụ: tuần hiện tại).
@@ -72,12 +72,9 @@ public class FacultyCalendarViewModel extends AndroidViewModel {
         Log.d(TAG, "loadAppointmentsForWeek: Loading appointments for week containing date: " + dateInWeek + ", filter: " + filterStatus);
         isLoading.setValue(true);
 
-        // Cập nhật ngày được chọn và trạng thái lọc trong ViewModel
-        // Điều này sẽ kích hoạt MediatorLiveData
         currentSelectedDateLiveData.setValue(dateInWeek);
         currentFilterStatus.setValue(filterStatus);
 
-        // Tính toán ngày bắt đầu và kết thúc của tuần chứa dateInWeek
         Calendar calendar = Calendar.getInstance(new Locale("vi", "VN"));
         calendar.setFirstDayOfWeek(Calendar.MONDAY);
         calendar.setTime(dateInWeek);
@@ -86,30 +83,18 @@ public class FacultyCalendarViewModel extends AndroidViewModel {
         calendar.add(Calendar.DATE, 6);
         Date endDateOfWeek = calendar.getTime();
 
-        // Format dates cho API
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         String startDateStr = dateFormat.format(startDateOfWeek);
         String endDateStr = dateFormat.format(endDateOfWeek);
 
-        // Sử dụng API mới getBookingsByWeek
-        repository.getBookingsByWeek(startDateStr, endDateStr, null, new FacultyRepository.FacultyApiCallback<FacultyApiService.BookingsByWeekResponse>() {
-            @Override
-            public void onSuccess(FacultyApiService.BookingsByWeekResponse result) {
-                Log.d(TAG, "loadAppointmentsForWeek: API call successful, received " + result.totalBookings + " bookings.");
-                allBookingsInPeriod.setValue(result);
-                // Cập nhật LiveData chứa TẤT CẢ bookings trong tuần
-                allBookingsList.setValue(result.allBookings); // MediatorLiveData sẽ tự lọc sau đó
-                extractEventDays(result);
+        repository.getBookingsByWeek(startDateStr, endDateStr, null).observeForever(result -> {
+            if (result != null) {
+                allBookingsList.setValue(result);
                 isLoading.setValue(false);
-                Log.d(TAG, "loadAppointmentsForWeek: Data loaded into allBookingsList.");
-            }
-
-            @Override
-            public void onError(String message) {
-                Log.e(TAG, "loadAppointmentsForWeek: API call failed: " + message);
-                errorMessage.setValue(message);
+            } else {
+                allBookingsList.setValue(new ArrayList<>());
                 isLoading.setValue(false);
-                allBookingsList.setValue(new ArrayList<>()); // Đặt rỗng khi lỗi
+                errorMessage.setValue("Không thể tải dữ liệu lịch hẹn tuần");
             }
         });
     }
@@ -124,28 +109,19 @@ public class FacultyCalendarViewModel extends AndroidViewModel {
         currentSelectedDateLiveData.setValue(date);
         currentFilterStatus.setValue(filterStatus);
 
-        // Format date cho API
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         String dateStr = dateFormat.format(date);
 
-        // Sử dụng API getBookingsByDate
-        repository.getBookingsByDate(dateStr, filterStatus.equals("ALL") ? null : filterStatus, 
-            new FacultyRepository.FacultyApiCallback<FacultyApiService.BookingsByDateResponse>() {
-                @Override
-                public void onSuccess(FacultyApiService.BookingsByDateResponse result) {
-                    Log.d(TAG, "loadAppointmentsForDate: API call successful, received " + result.totalBookings + " bookings.");
-                    allBookingsList.setValue(result.bookings);
-                    isLoading.setValue(false);
-                }
-
-                @Override
-                public void onError(String message) {
-                    Log.e(TAG, "loadAppointmentsForDate: API call failed: " + message);
-                    errorMessage.setValue(message);
-                    isLoading.setValue(false);
-                    allBookingsList.setValue(new ArrayList<>());
-                }
-            });
+        repository.getBookingsByDate(dateStr, filterStatus.equals("ALL") ? null : filterStatus).observeForever(result -> {
+            if (result != null) {
+                allBookingsList.setValue(result);
+                isLoading.setValue(false);
+            } else {
+                allBookingsList.setValue(new ArrayList<>());
+                isLoading.setValue(false);
+                errorMessage.setValue("Không thể tải dữ liệu lịch hẹn ngày");
+            }
+        });
     }
     
     /**
@@ -155,23 +131,16 @@ public class FacultyCalendarViewModel extends AndroidViewModel {
         Log.d(TAG, "loadAppointmentsByStatus: Loading appointments with status: " + status + ", limit: " + limit);
         isLoading.setValue(true);
 
-        repository.getBookingsByStatus(status, limit, 
-            new FacultyRepository.FacultyApiCallback<FacultyApiService.BookingsByStatusResponse>() {
-                @Override
-                public void onSuccess(FacultyApiService.BookingsByStatusResponse result) {
-                    Log.d(TAG, "loadAppointmentsByStatus: API call successful, received " + result.totalBookings + " bookings.");
-                    allBookingsList.setValue(result.bookings);
-                    isLoading.setValue(false);
-                }
-
-                @Override
-                public void onError(String message) {
-                    Log.e(TAG, "loadAppointmentsByStatus: API call failed: " + message);
-                    errorMessage.setValue(message);
-                    isLoading.setValue(false);
-                    allBookingsList.setValue(new ArrayList<>());
-                }
-            });
+        repository.getBookingsByStatus(status, limit).observeForever(result -> {
+            if (result != null) {
+                allBookingsList.setValue(result);
+                isLoading.setValue(false);
+            } else {
+                allBookingsList.setValue(new ArrayList<>());
+                isLoading.setValue(false);
+                errorMessage.setValue("Không thể tải dữ liệu lịch hẹn theo trạng thái");
+            }
+        });
     }
 
     /**
@@ -268,7 +237,13 @@ public class FacultyCalendarViewModel extends AndroidViewModel {
     private boolean isSameDay(String bookingTimeString, Date targetDate) {
         try {
             Date bookingDate = parseBookingTime(bookingTimeString);
-            return isSameDay(bookingDate, targetDate);
+            // Convert cả hai về UTC để so sánh ngày
+            Calendar cal1 = Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC"));
+            cal1.setTime(bookingDate);
+            Calendar cal2 = Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC"));
+            cal2.setTime(targetDate);
+            return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
+                    cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR);
         } catch (Exception e) {
             Log.e(TAG, "isSameDay: Error parsing booking time string: " + bookingTimeString + " - " + e.getMessage());
             return false;
@@ -308,19 +283,15 @@ public class FacultyCalendarViewModel extends AndroidViewModel {
 
     // Approve booking with reload parameters
     public void approveBooking(int bookingId, Date selectedDate, String filterStatus) {
-        Log.d(TAG, "approveBooking: Booking ID " + bookingId + " for date " + selectedDate + " with filter " + filterStatus);
-        repository.approveBooking(bookingId, new FacultyRepository.FacultyApiCallback<Booking>() {
-            @Override
-            public void onSuccess(Booking result) {
+        isLoading.setValue(true);
+        repository.approveBooking(bookingId).observeForever(result -> {
+            if (result != null) {
                 successMessage.setValue("Đã xác nhận lịch hẹn thành công!");
-                // Tải lại dữ liệu cho tuần hiện tại và kích hoạt lọc lại
-                loadAppointmentsForWeek(selectedDate, filterStatus); // Sửa ở đây
+                loadAppointmentsForWeek(selectedDate, filterStatus);
+            } else {
+                errorMessage.setValue("Không thể xác nhận lịch hẹn");
             }
-
-            @Override
-            public void onError(String message) {
-                errorMessage.setValue(message);
-            }
+            isLoading.setValue(false);
         });
     }
 
@@ -331,18 +302,15 @@ public class FacultyCalendarViewModel extends AndroidViewModel {
 
     // Cancel booking with reload parameters
     public void cancelBooking(int bookingId, String reason, Date selectedDate, String filterStatus) {
-        Log.d(TAG, "cancelBooking: Booking ID " + bookingId + " for date " + selectedDate + " with filter " + filterStatus);
-        repository.cancelBooking(bookingId, reason, new FacultyRepository.FacultyApiCallback<Booking>() {
-            @Override
-            public void onSuccess(Booking result) {
+        isLoading.setValue(true);
+        repository.cancelBooking(bookingId, reason).observeForever(result -> {
+            if (result != null) {
                 successMessage.setValue("Đã hủy lịch hẹn thành công!");
                 loadAppointmentsForWeek(selectedDate, filterStatus);
+            } else {
+                errorMessage.setValue("Không thể hủy lịch hẹn");
             }
-
-            @Override
-            public void onError(String message) {
-                errorMessage.setValue(message);
-            }
+            isLoading.setValue(false);
         });
     }
 
@@ -353,18 +321,15 @@ public class FacultyCalendarViewModel extends AndroidViewModel {
 
     // Reject booking with reload parameters
     public void rejectBooking(int bookingId, String reason, Date selectedDate, String filterStatus) {
-        Log.d(TAG, "rejectBooking: Booking ID " + bookingId + " for date " + selectedDate + " with filter " + filterStatus);
-        repository.rejectBooking(bookingId, reason, new FacultyRepository.FacultyApiCallback<Booking>() {
-            @Override
-            public void onSuccess(Booking result) {
+        isLoading.setValue(true);
+        repository.rejectBooking(bookingId, reason).observeForever(result -> {
+            if (result != null) {
                 successMessage.setValue("Đã từ chối lịch hẹn thành công!");
                 loadAppointmentsForWeek(selectedDate, filterStatus);
+            } else {
+                errorMessage.setValue("Không thể từ chối lịch hẹn");
             }
-
-            @Override
-            public void onError(String message) {
-                errorMessage.setValue(message);
-            }
+            isLoading.setValue(false);
         });
     }
 
@@ -375,17 +340,15 @@ public class FacultyCalendarViewModel extends AndroidViewModel {
 
     // Mark booking as completed with reload parameters
     public void markBookingCompleted(int bookingId, Date selectedDate, String filterStatus) {
-        Log.d(TAG, "markBookingCompleted: Booking ID " + bookingId + " for date " + selectedDate + " with filter " + filterStatus);
-        repository.markBookingCompleted(bookingId, new FacultyRepository.FacultyApiCallback<Booking>() {
-            @Override
-            public void onSuccess(Booking result) {
+        isLoading.setValue(true);
+        repository.markBookingCompleted(bookingId).observeForever(result -> {
+            if (result != null) {
                 successMessage.setValue("Đã đánh dấu hoàn thành!");
                 loadAppointmentsForWeek(selectedDate, filterStatus);
+            } else {
+                errorMessage.setValue("Không thể đánh dấu hoàn thành");
             }
-            @Override
-            public void onError(String message) {
-                errorMessage.setValue(message);
-            }
+            isLoading.setValue(false);
         });
     }
 
@@ -485,7 +448,7 @@ public class FacultyCalendarViewModel extends AndroidViewModel {
         }
     }
 
-    private void extractEventDays(FacultyApiService.BookingsByWeekResponse response) {
+    private void extractEventDays(ApiService.BookingsByWeekResponse response) {
         if (response == null || response.bookingsByDate == null) {
             eventDays.postValue(new ArrayList<>());
             return;

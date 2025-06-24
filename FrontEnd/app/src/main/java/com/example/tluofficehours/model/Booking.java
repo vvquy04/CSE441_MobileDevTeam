@@ -5,13 +5,13 @@ import java.io.Serializable;
 
 public class Booking implements Serializable {
     @SerializedName("BookingId")
-    private int bookingId;
+    private String bookingId;
     
     @SerializedName("SlotId")
-    private int slotId;
+    private String slotId;
     
     @SerializedName("StudentUserId")
-    private int studentUserId;
+    private String studentUserId;
     
     @SerializedName("BookingTime")
     private String bookingTime;
@@ -34,53 +34,47 @@ public class Booking implements Serializable {
     @SerializedName("updated_at")
     private String updatedAt;
     
+    @SerializedName("booking_date")
+    private String bookingDate;
+    
+    @SerializedName("booking_time_range")
+    private String bookingTimeRange;
+    
     @SerializedName("student")
-    private User student;
+    private Student student;
     
     @SerializedName("slot")
-    private AvailableSlot slot;
-
-    // Constructors
-    public Booking() {}
+    private Slot slot;
     
-    public Booking(int bookingId, int slotId, int studentUserId, String bookingTime, 
-                   String purpose, String status) {
-        this.bookingId = bookingId;
-        this.slotId = slotId;
-        this.studentUserId = studentUserId;
-        this.bookingTime = bookingTime;
-        this.purpose = purpose;
-        this.status = status;
-    }
-
-    // Getters and Setters
-    public int getBookingId() { return bookingId; }
-    public void setBookingId(int bookingId) { this.bookingId = bookingId; }
-    
-    public int getSlotId() { return slotId; }
-    public void setSlotId(int slotId) { this.slotId = slotId; }
-    
-    public int getStudentUserId() { return studentUserId; }
-    public void setStudentUserId(int studentUserId) { this.studentUserId = studentUserId; }
-    
+    // Getters
+    public String getBookingId() { return bookingId; }
+    public String getSlotId() { return slotId; }
+    public String getStudentUserId() { return studentUserId; }
     public String getBookingTime() { return bookingTime; }
-    public void setBookingTime(String bookingTime) { this.bookingTime = bookingTime; }
-    
     public String getPurpose() { return purpose; }
-    public void setPurpose(String purpose) { this.purpose = purpose; }
-    
     public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    
     public String getCancellationTime() { return cancellationTime; }
-    public void setCancellationTime(String cancellationTime) { this.cancellationTime = cancellationTime; }
-    
     public String getCancellationReason() { return cancellationReason; }
+    public String getCreatedAt() { return createdAt; }
+    public String getUpdatedAt() { return updatedAt; }
+    public String getBookingDate() { return bookingDate; }
+    public String getBookingTimeRange() { return bookingTimeRange; }
+    public Student getStudent() { return student; }
+    public Slot getSlot() { return slot; }
+    
+    // Setters
+    public void setBookingId(String bookingId) { this.bookingId = bookingId; }
+    public void setSlotId(String slotId) { this.slotId = slotId; }
+    public void setStudentUserId(String studentUserId) { this.studentUserId = studentUserId; }
+    public void setBookingTime(String bookingTime) { this.bookingTime = bookingTime; }
+    public void setPurpose(String purpose) { this.purpose = purpose; }
+    public void setStatus(String status) { this.status = status; }
+    public void setCancellationTime(String cancellationTime) { this.cancellationTime = cancellationTime; }
     public void setCancellationReason(String cancellationReason) { this.cancellationReason = cancellationReason; }
-    
-    public User getStudent() { return student; }
-    public void setStudent(User student) { this.student = student; }
-    
-    public AvailableSlot getSlot() { return slot; }
-    public void setSlot(AvailableSlot slot) { this.slot = slot; }
-} 
+    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+    public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
+    public void setBookingDate(String bookingDate) { this.bookingDate = bookingDate; }
+    public void setBookingTimeRange(String bookingTimeRange) { this.bookingTimeRange = bookingTimeRange; }
+    public void setStudent(Student student) { this.student = student; }
+    public void setSlot(Slot slot) { this.slot = slot; }
+}

@@ -707,8 +707,7 @@ public class AddScheduleActivity extends AppCompatActivity implements TimeSlotAd
         data.setSpecificDateMode(isSpecificDateMode);
         
         if (selectedDate != null) {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            data.setSelectedDate(sdf.format(selectedDate));
+            data.setSelectedDate(getSelectedDateUTC());
         }
         
         // Lấy time slots từ adapter tương ứng
@@ -742,7 +741,8 @@ public class AddScheduleActivity extends AppCompatActivity implements TimeSlotAd
                     List<TimeSlot> selectedSlots = new ArrayList<>();
                     for (TimeSlot slot : adapter.getTimeSlots()) {
                         if (slot.isSelected()) {
-                            selectedSlots.add(slot);
+                            // Clone từng TimeSlot để tránh dùng chung object
+                            selectedSlots.add(new TimeSlot(slot.getStartTime(), slot.getEndTime(), slot.isSelected()));
                         }
                     }
                     if (!selectedSlots.isEmpty()) {
@@ -921,5 +921,13 @@ public class AddScheduleActivity extends AppCompatActivity implements TimeSlotAd
         }
         dialog.setTitle("Chọn tháng/năm");
         dialog.show();
+    }
+
+    // Thay thế hàm lấy ngày selectedDate về UTC yyyy-MM-dd
+    private String getSelectedDateUTC() {
+        if (selectedDate == null) return null;
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault());
+        sdf.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+        return sdf.format(selectedDate);
     }
 }

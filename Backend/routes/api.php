@@ -8,8 +8,8 @@ use App\Http\Controllers\Api\Faculty\FacultyController;
 //
 use App\Http\Controllers\Api\Student\TeacherController;
 use App\Http\Controllers\Api\Student\StudentController;
-use App\Http\Controllers\Api\Faculty\FacultyController;
 use App\Http\Controllers\Api\NotificationController;
+use Illuminate\Support\Facades\DB;
 // vanquy_refactor
 
 // Test API
@@ -62,7 +62,7 @@ Route::get('/test-bookings', function() {
         'faculty_id' => $facultyId,
         'total_bookings' => $bookings->count(),
         'bookings' => $bookings,
-        'raw_sql' => \DB::getQueryLog()
+        'raw_sql' => DB::getQueryLog()
     ]);
 });
 

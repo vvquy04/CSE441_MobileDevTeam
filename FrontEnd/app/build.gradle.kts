@@ -77,21 +77,17 @@ dependencies {
 // =======
     implementation ("androidx.recyclerview:recyclerview:1.3.0")
     implementation ("androidx.cardview:cardview:1.0.0")
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.9")
 
     implementation ("androidx.viewpager2:viewpager2:1.1.0")
-    
-// >>>>>>> vanquy_refactor
-
-    // Java 8+ API Desugaring
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.5")
 }
 
 configurations.all {
     exclude(group = "com.android.support")
 }
+

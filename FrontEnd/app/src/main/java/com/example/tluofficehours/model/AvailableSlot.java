@@ -1,86 +1,85 @@
 package com.example.tluofficehours.model;
 
+import android.widget.Button;
 import com.google.gson.annotations.SerializedName;
-import java.io.Serializable;
-import java.util.List;
 
-public class AvailableSlot implements Serializable {
-    @SerializedName("slot_id")
-    private int slotId;
+public class AvailableSlot {
+    @SerializedName("SlotId")
+    private String slotId;
     
     @SerializedName("faculty_user_id")
-    private int facultyUserId;
+    private String facultyUserId;
     
-    @SerializedName(value = "start_time", alternate = {"StartTime"})
+    @SerializedName("StartTime")
     private String startTime;
     
-    @SerializedName(value = "end_time", alternate = {"EndTime"})
+    @SerializedName("EndTime")
     private String endTime;
     
-    @SerializedName("max_students")
+    @SerializedName("MaxStudents")
     private int maxStudents;
     
-    @SerializedName("is_available")
+    @SerializedName("IsAvailable")
     private boolean isAvailable;
     
-    @SerializedName("definition_id")
-    private Integer definitionId;
+    @SerializedName("DefinitionId")
+    private String definitionId;
     
-    @SerializedName("bookings")
-    private List<Booking> bookings;
-
-    // Constructors
-    public AvailableSlot() {}
+    @SerializedName("created_at")
+    private String createdAt;
     
-    public AvailableSlot(int slotId, int facultyUserId, String startTime, String endTime, 
-                        int maxStudents, boolean isAvailable) {
-        this.slotId = slotId;
-        this.facultyUserId = facultyUserId;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.maxStudents = maxStudents;
-        this.isAvailable = isAvailable;
-    }
-
-    // Getters and Setters
-    public int getSlotId() { return slotId; }
-    public void setSlotId(int slotId) { this.slotId = slotId; }
+    @SerializedName("updated_at")
+    private String updatedAt;
     
-    public int getFacultyUserId() { return facultyUserId; }
-    public void setFacultyUserId(int facultyUserId) { this.facultyUserId = facultyUserId; }
+    // UI state properties
+    private boolean isSelected = false;
+    private Button buttonView;
     
+    // Getters
+    public String getSlotId() { return slotId; }
+    public String getFacultyUserId() { return facultyUserId; }
     public String getStartTime() { return startTime; }
-    public void setStartTime(String startTime) { this.startTime = startTime; }
-    
     public String getEndTime() { return endTime; }
-    public void setEndTime(String endTime) { this.endTime = endTime; }
-    
     public int getMaxStudents() { return maxStudents; }
-    public void setMaxStudents(int maxStudents) { this.maxStudents = maxStudents; }
-    
     public boolean isAvailable() { return isAvailable; }
+    public String getDefinitionId() { return definitionId; }
+    public String getCreatedAt() { return createdAt; }
+    public String getUpdatedAt() { return updatedAt; }
+    public boolean isSelected() { return isSelected; }
+    public Button getButtonView() { return buttonView; }
+    
+    // Utility method to get display time
+    public String getTimeDisplay() {
+        try {
+            // Parse startTime và endTime từ ISO format
+            String startTimeStr = startTime;
+            String endTimeStr = endTime;
+            
+            // Nếu là ISO format (có T và Z), extract phần thời gian
+            if (startTimeStr != null && startTimeStr.contains("T")) {
+                startTimeStr = startTimeStr.substring(startTimeStr.indexOf("T") + 1, startTimeStr.indexOf("T") + 6);
+            }
+            if (endTimeStr != null && endTimeStr.contains("T")) {
+                endTimeStr = endTimeStr.substring(endTimeStr.indexOf("T") + 1, endTimeStr.indexOf("T") + 6);
+            }
+            
+            return startTimeStr + " - " + endTimeStr;
+        } catch (Exception e) {
+            // Fallback nếu có lỗi parsing
+            return startTime + " - " + endTime;
+        }
+    }
+    
+    // Setters
+    public void setSlotId(String slotId) { this.slotId = slotId; }
+    public void setFacultyUserId(String facultyUserId) { this.facultyUserId = facultyUserId; }
+    public void setStartTime(String startTime) { this.startTime = startTime; }
+    public void setEndTime(String endTime) { this.endTime = endTime; }
+    public void setMaxStudents(int maxStudents) { this.maxStudents = maxStudents; }
     public void setAvailable(boolean available) { isAvailable = available; }
-    
-    public Integer getDefinitionId() { return definitionId; }
-    public void setDefinitionId(Integer definitionId) { this.definitionId = definitionId; }
-    
-    public List<Booking> getBookings() { return bookings; }
-    public void setBookings(List<Booking> bookings) { this.bookings = bookings; }
-    
-    // Helper methods
-    public int getCurrentBookingsCount() {
-        if (bookings == null) return 0;
-        return (int) bookings.stream()
-                .filter(booking -> "pending".equals(booking.getStatus()) || 
-                                 "confirmed".equals(booking.getStatus()))
-                .count();
-    }
-    
-    public int getAvailableSpots() {
-        return Math.max(0, maxStudents - getCurrentBookingsCount());
-    }
-    
-    public boolean isFull() {
-        return getCurrentBookingsCount() >= maxStudents;
-    }
-} 
+    public void setDefinitionId(String definitionId) { this.definitionId = definitionId; }
+    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+    public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
+    public void setSelected(boolean selected) { isSelected = selected; }
+    public void setButtonView(Button buttonView) { this.buttonView = buttonView; }
+}

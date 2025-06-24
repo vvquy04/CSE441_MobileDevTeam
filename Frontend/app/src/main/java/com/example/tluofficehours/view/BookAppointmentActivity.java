@@ -299,9 +299,23 @@ public class BookAppointmentActivity extends AppCompatActivity {
             // Sử dụng method getTimeDisplay() để lấy chuỗi thời gian
             timeButton.setText(slot.getTimeDisplay());
             timeButton.setTag(slot);
-            
-            // Kiểm tra trạng thái available
-            if (slot.isAvailable()) {
+
+            // Kiểm tra trạng thái available và full
+            boolean isFull = false;
+            if (slot.getMaxStudents() > 1) {
+                // Đếm số booking hiện tại (nếu có trường availableSpots hoặc isFull thì dùng, nếu không thì chỉ dựa vào isAvailable)
+                // Nếu backend trả về availableSpots hoặc isFull thì nên dùng, ở đây giả sử chỉ có isAvailable
+                isFull = !slot.isAvailable(); // Nếu không available thì coi là full
+            } else {
+                isFull = !slot.isAvailable();
+            }
+
+            if (!slot.isAvailable() || isFull) {
+                timeButton.setEnabled(false);
+                timeButton.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
+                timeButton.setTextColor(getResources().getColor(android.R.color.white));
+                timeButton.setOnClickListener(v -> showFullSlotDialog());
+            } else {
                 timeButton.setEnabled(true);
                 timeButton.setOnClickListener(v -> {
                     // Hủy chọn slot cũ (nếu có)
@@ -309,20 +323,15 @@ public class BookAppointmentActivity extends AppCompatActivity {
                         selectedAvailableSlot.getButtonView().setSelected(false);
                         selectedAvailableSlot.setSelected(false);
                     }
-                    
                     // Chọn slot mới
                     selectedAvailableSlot = slot;
                     slot.setSelected(true);
                     slot.setButtonView(timeButton);
                     timeButton.setSelected(true);
-                    
                     showBookingInfoDialog(slot);
                 });
-            } else {
-                timeButton.setEnabled(false);
-                timeButton.setOnClickListener(v -> showUnavailableDialog());
             }
-            
+
             timeButton.setTextAppearance(R.style.TimeSlotButton);
             GridLayout.LayoutParams params = new GridLayout.LayoutParams();
             params.width = 0;
@@ -389,6 +398,10 @@ public class BookAppointmentActivity extends AppCompatActivity {
                 if (!countStr.isEmpty()) {
                     memberCount = Integer.parseInt(countStr);
                 }
+                if (memberCount > slot.getMaxStudents()) {
+                    Toast.makeText(this, "Số lượng sinh viên vượt quá giới hạn cho slot này! (Tối đa: " + slot.getMaxStudents() + ")", Toast.LENGTH_LONG).show();
+                    return;
+                }
             }
             bookSlot(slot, memberCount, reason);
         });
@@ -396,20 +409,11 @@ public class BookAppointmentActivity extends AppCompatActivity {
         builder.show();
     }
 
-    // Dialog: slot đã có sinh viên đặt
-    private void showBookedDialog() {
+    // Dialog: slot đã đầy hoặc đã được đặt
+    private void showFullSlotDialog() {
         new android.app.AlertDialog.Builder(this)
             .setTitle("Thông báo")
-            .setMessage("Khung giờ này đã có sinh viên đặt. Vui lòng chọn thời gian khác.")
-            .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
-            .show();
-    }
-
-    // Dialog: slot giảng viên bận
-    private void showUnavailableDialog() {
-        new android.app.AlertDialog.Builder(this)
-            .setTitle("Thông báo")
-            .setMessage("Giảng viên bận vào thời gian này. Vui lòng chọn thời gian khác.")
+            .setMessage("Khung giờ này đã đầy hoặc đã được đặt. Vui lòng chọn thời gian khác.")
             .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
             .show();
     }

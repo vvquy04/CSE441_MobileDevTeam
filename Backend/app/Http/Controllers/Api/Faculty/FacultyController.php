@@ -14,6 +14,10 @@ use App\Models\FacultyProfile;
 use App\Models\Department;
 use App\Models\OfficeHourDefinition;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+
 
 class FacultyController extends Controller
 {
@@ -56,7 +60,7 @@ class FacultyController extends Controller
             ->limit(5)
             ->get();
         
-        return response()->json([
+            return response()->json([
             'totalSlots' => $totalSlots,
             'availableSlots' => $availableSlots,
             'totalBookings' => $totalBookings,
@@ -147,7 +151,7 @@ class FacultyController extends Controller
         $facultyId = Auth::id();
         
         // Log authentication info
-        \Log::info('getBookingsByWeek called', [
+        Log::info('getBookingsByWeek called', [
             'faculty_id' => $facultyId,
             'user' => Auth::user() ? Auth::user()->email : 'null',
             'headers' => $request->headers->all(),
@@ -181,7 +185,7 @@ class FacultyController extends Controller
             return Carbon::parse($booking->BookingTime)->format('Y-m-d');
         });
         
-        \Log::info('getBookingsByWeek result', [
+        Log::info('getBookingsByWeek result', [
             'faculty_id' => $facultyId,
             'total_bookings' => $bookings->count(),
             'start_date' => $startDate,
@@ -402,7 +406,7 @@ class FacultyController extends Controller
         
         $slot->IsAvailable = !$slot->IsAvailable;
         $slot->save();
-
+        
         return response()->json([
             'message' => 'Trạng thái slot đã được thay đổi!',
             'slot' => $slot
@@ -418,49 +422,61 @@ class FacultyController extends Controller
         
         return response()->json($user);
     }
-    
+
     public function updateProfile(Request $request)
     {
+        $user = $request->user();
+        $roles = $user->roles->pluck('RoleName')->toArray();
+        
+        // Kiểm tra xem user có phải là giảng viên không
+        if (!in_array('faculty', $roles)) {
+            return response()->json([
+                'message' => 'Unauthorized. User is not a faculty.'
+            ], 403);
+        }
+
         $request->validate([
-            'facultyName' => 'required|string|max:255',
-            'departmentId' => 'required|string|exists:departments,DepartmentId',
+            'faculty_name' => 'nullable|string|max:255',
+            'department_id' => 'nullable|string|exists:departments,DepartmentId',
             'degree' => 'nullable|string|max:255',
-            'phoneNumber' => 'nullable|string|max:20',
-            'officeLocation' => 'nullable|string|max:255',
+            'phone_number' => 'nullable|string|max:20',
+            'office_location' => 'nullable|string|max:255',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $facultyId = Auth::id();
-        
-        $profile = FacultyProfile::where('faculty_user_id', $facultyId)->first();
+        $profile = FacultyProfile::where('faculty_user_id', $user->UserId)->first();
         
         if (!$profile) {
-            $profile = new FacultyProfile();
-            $profile->faculty_user_id = $facultyId;
+            return response()->json([
+                'message' => 'Faculty profile not found.'
+            ], 404);
         }
 
-        $profile->faculty_name = $request->facultyName;
-        $profile->department_id = $request->departmentId;
-        $profile->degree = $request->degree;
-        $profile->phone_number = $request->phoneNumber;
-        $profile->office_location = $request->officeLocation;
+        // Cập nhật thông tin profile (gán từng trường một)
+        $profile->faculty_name = $request->input('faculty_name', $profile->faculty_name);
+        $profile->department_id = $request->input('department_id', $profile->department_id);
+        $profile->degree = $request->input('degree', $profile->degree);
+        $profile->phone_number = $request->input('phone_number', $profile->phone_number);
+        $profile->office_location = $request->input('office_location', $profile->office_location);
 
-        // Handle avatar upload
+        // Xử lý avatar nếu có
         if ($request->hasFile('avatar')) {
-            // Delete old avatar if exists
-            if ($profile->avatar && \Storage::disk('public')->exists($profile->avatar)) {
-                \Storage::disk('public')->delete($profile->avatar);
+            // Xóa avatar cũ nếu có
+            if ($profile->avatar) {
+                Storage::disk('public')->delete($profile->avatar);
             }
-            
-            $avatarPath = $request->file('avatar')->store('faculty-avatars', 'public');
+            $avatarPath = $request->file('avatar')->store('avatars', 'public');
             $profile->avatar = $avatarPath;
         }
 
         $profile->save();
 
+        $avatarUrl = $profile->avatar ? asset('storage/' . $profile->avatar) : null;
+
         return response()->json([
-            'message' => 'Thông tin profile đã được cập nhật thành công!',
-            'user' => User::with(['facultyProfile.department'])->find($facultyId)
+            'message' => 'Profile updated successfully.',
+            'profile' => $profile,
+            'avatar_url' => $avatarUrl
         ]);
     }
 
@@ -528,65 +544,42 @@ class FacultyController extends Controller
         $createdDefinitions = [];
         $createdSlots = [];
 
-        // Lấy tháng/năm từ request hoặc mặc định là tháng/năm hiện tại
-        $month = $request->input('month', now()->month);
-        $year = $request->input('year', now()->year);
-        $start = \Carbon\Carbon::create($year, $month, 1)->startOfMonth();
-        $end = \Carbon\Carbon::create($year, $month, 1)->endOfMonth();
-
-        // Nhóm slots theo ngày trong tuần (1=Monday, ..., 7=Sunday)
-        $slotsByDayOfWeek = [];
         foreach ($request->slots as $slotData) {
             $slotDate = \Carbon\Carbon::parse($slotData['start_time']);
             $dayOfWeek = $slotDate->dayOfWeekIso; // 1=Monday, 7=Sunday
-            if (!isset($slotsByDayOfWeek[$dayOfWeek])) {
-                $slotsByDayOfWeek[$dayOfWeek] = [];
-            }
-            $slotsByDayOfWeek[$dayOfWeek][] = $slotData;
-        }
 
-        // Lặp từng ngày trong tháng, chỉ tạo slot cho đúng pattern
-        for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
-            $dayOfWeek = $date->dayOfWeekIso; // 1=Monday, 7=Sunday
-            if (isset($slotsByDayOfWeek[$dayOfWeek])) {
-                // Tạo office hour definition cho ngày này (mỗi ngày 1 definition)
-                $daySlots = $slotsByDayOfWeek[$dayOfWeek];
-                $definition = OfficeHourDefinition::create([
-                    'faculty_user_id' => $facultyId,
-                    'DayOfWeek' => $dayOfWeek,
-                    'StartTime' => \Carbon\Carbon::parse($daySlots[0]['start_time'])->format('H:i:s'),
-                    'EndTime' => \Carbon\Carbon::parse($daySlots[count($daySlots) - 1]['end_time'])->format('H:i:s'),
-                    'SlotDurationMinutes' => $request->slot_duration,
-                    'MaxStudentsPerSlot' => $request->max_students,
-                    'Note' => $request->notes . " (" . $date->format('d/m/Y') . ")"
-                ]);
-                $createdDefinitions[] = $definition;
-                // Tạo slots cho ngày này
-                foreach ($daySlots as $slotData) {
-                    $slotTime = \Carbon\Carbon::parse($slotData['start_time']);
-                    $createdSlots[] = AvailableSlot::create([
-                        'faculty_user_id' => $facultyId,
-                        'StartTime' => $date->format('Y-m-d ') . $slotTime->format('H:i:s'),
-                        'EndTime' => $date->format('Y-m-d ') . \Carbon\Carbon::parse($slotData['end_time'])->format('H:i:s'),
-                        'MaxStudents' => $request->max_students,
-                        'IsAvailable' => true,
-                        'DefinitionId' => $definition->DefinitionId
-                    ]);
-                }
-            }
+            // Tạo definition cho từng slot
+            $definition = OfficeHourDefinition::create([
+                'faculty_user_id' => $facultyId,
+                'DayOfWeek' => $dayOfWeek,
+                'StartTime' => $slotDate->format('H:i:s'),
+                'EndTime' => \Carbon\Carbon::parse($slotData['end_time'])->format('H:i:s'),
+                'SlotDurationMinutes' => $request->slot_duration,
+                'MaxStudentsPerSlot' => $request->max_students,
+                'Note' => $request->notes . " (" . $slotDate->format('d/m/Y') . ")"
+            ]);
+            $createdDefinitions[] = $definition;
+
+            $createdSlots[] = AvailableSlot::create([
+                'faculty_user_id' => $facultyId,
+                'StartTime' => $slotData['start_time'],
+                'EndTime' => $slotData['end_time'],
+                'MaxStudents' => $request->max_students,
+                'IsAvailable' => true,
+                'DefinitionId' => $definition->DefinitionId
+            ]);
         }
 
         $message = $request->apply_monthly 
-            ? "Đã tạo lịch cho tháng $month/$year!"
+            ? "Đã tạo lịch cho tháng {$request->month}/{$request->year}!"
             : "Đã tạo lịch cho tuần hiện tại!";
 
         return response()->json([
             'message' => $message,
             'definitions' => $createdDefinitions,
             'total_slots' => count($createdSlots),
-            'month' => $month,
-            'year' => $year,
-            'pattern_days' => array_keys($slotsByDayOfWeek)
+            'month' => $request->month,
+            'year' => $request->year,
         ], 201);
     }
 
@@ -603,93 +596,29 @@ class FacultyController extends Controller
         ];
         
         return $days[$dayOfWeek] ?? 'Không xác định';
-//code của main
-
-use App\Models\User;
-use App\Models\FacultyProfile;
-use App\Models\AvailableSlot;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-
-class FacultyController extends Controller
-{
+    }
     public function getUserProfile(Request $request)
     {
         $user = $request->user();
         $roles = $user->roles->pluck('RoleName')->toArray();
-        
         // Kiểm tra xem user có phải là giảng viên không
         if (!in_array('faculty', $roles)) {
             return response()->json([
                 'message' => 'Unauthorized. User is not a faculty.'
             ], 403);
         }
-        
-        $profile = FacultyProfile::where('faculty_user_id', $user->UserId)->first();
-        $avatarUrl = null;
-        
-        if ($profile && $profile->avatar) {
-            $avatarUrl = asset('storage/' . $profile->avatar);
-        }
-        
+        // Eager load department
+        $profile = \App\Models\FacultyProfile::with('department')->where('faculty_user_id', $user->UserId)->first();
+        $avatarUrl = $profile && $profile->avatar ? asset('storage/' . $profile->avatar) : null;
         return response()->json([
-            'user' => $user,
-            'roles' => $roles,
-            'profile' => $profile,
-            'avatar_url' => $avatarUrl
-        ]);
-    }
-
-    public function updateProfile(Request $request)
-    {
-        $user = $request->user();
-        $roles = $user->roles->pluck('RoleName')->toArray();
-        
-        // Kiểm tra xem user có phải là giảng viên không
-        if (!in_array('faculty', $roles)) {
-            return response()->json([
-                'message' => 'Unauthorized. User is not a faculty.'
-            ], 403);
-        }
-
-        $request->validate([
-            'faculty_name' => 'nullable|string|max:255',
-            'department_id' => 'nullable|string|exists:departments,DepartmentId',
-            'degree' => 'nullable|string|max:255',
-            'phone_number' => 'nullable|string|max:20',
-            'office_location' => 'nullable|string|max:255',
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
-
-        $profile = FacultyProfile::where('faculty_user_id', $user->UserId)->first();
-        
-        if (!$profile) {
-            return response()->json([
-                'message' => 'Faculty profile not found.'
-            ], 404);
-        }
-
-        // Cập nhật thông tin profile
-        $profile->update($request->only([
-            'faculty_name', 'department_id', 'degree', 'phone_number', 'office_location'
-        ]));
-
-        // Xử lý avatar nếu có
-        if ($request->hasFile('avatar')) {
-            // Xóa avatar cũ nếu có
-            if ($profile->avatar) {
-                Storage::disk('public')->delete($profile->avatar);
-            }
-            
-            $avatarPath = $request->file('avatar')->store('avatars', 'public');
-            $profile->update(['avatar' => $avatarPath]);
-        }
-
-        $avatarUrl = $profile->avatar ? asset('storage/' . $profile->avatar) : null;
-
-        return response()->json([
-            'message' => 'Profile updated successfully.',
-            'profile' => $profile,
+            'faculty_user_id' => $profile->faculty_user_id,
+            'faculty_name' => $profile->faculty_name,
+            'department_id' => $profile->department_id,
+            'department_name' => $profile->department ? $profile->department->DepartmentName : null,
+            'phone_number' => $profile->phone_number,
+            'email' => $user->email,
+            'degree' => $profile->degree,
+            'office_location' => $profile->office_location,
             'avatar_url' => $avatarUrl
         ]);
     }
