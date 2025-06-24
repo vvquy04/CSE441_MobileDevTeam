@@ -38,6 +38,9 @@ android {
             excludes += "/META-INF/NOTICE.md"
         }
     }
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
@@ -67,9 +70,18 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 
+// <<<<<<< HEAD
     // Calendar & Date/Time
     implementation("com.github.prolificinteractive:material-calendarview:2.0.1")
     implementation("com.jakewharton.threetenabp:threetenabp:1.4.6")
+// =======
+    implementation ("androidx.recyclerview:recyclerview:1.3.0")
+    implementation ("androidx.cardview:cardview:1.0.0")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.9")
+
+    implementation ("androidx.viewpager2:viewpager2:1.1.0")
+    
+// >>>>>>> vanquy_refactor
 
     // Java 8+ API Desugaring
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")

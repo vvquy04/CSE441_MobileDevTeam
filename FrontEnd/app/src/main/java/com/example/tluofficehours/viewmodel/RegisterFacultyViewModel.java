@@ -123,7 +123,7 @@ public class RegisterFacultyViewModel extends AndroidViewModel {
                         errorMessage.setValue(errorMsg.toString());
                     } catch (IOException e) {
                         errorMessage.setValue("Lỗi xử lý phản hồi từ máy chủ:\n" + e.getMessage() +
-                                           "\nVui lòng kiểm tra kết nối mạng và thử lại.");
+                                "\nVui lòng kiểm tra kết nối mạng và thử lại.");
                     }
                 }
             }

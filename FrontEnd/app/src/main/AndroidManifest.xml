@@ -14,13 +14,26 @@
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.TLUOfficeHours"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".ProfileActivity"
+            android:name=".view.AppointmentDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.BookingSuccessActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.MyAppointmentActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.BookAppointmentActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.FacultyDetailActivity"
             android:exported="false" />
         <activity
             android:name=".view.ProfileFacultyActivity"
@@ -29,10 +42,14 @@
             android:name=".NotificationActivity"
             android:exported="false" />
         <activity
+// HEAD
             android:name=".view.NotificationFacultyActivity"
             android:exported="false" />
         <activity
             android:name=".TeachListActivity"
+//
+            android:name=".view.TeachListActivity"
+// vanquy_refactor
             android:exported="false" />
         <activity
             android:name=".view.FacultyMainActivity"
@@ -51,13 +68,7 @@
             android:exported="false" />
         <activity
             android:name=".view.LoginActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:exported="false" />
         <activity
             android:name=".view.RegisterActivity"
             android:exported="false" />
@@ -71,8 +82,17 @@
             android:name=".view.RegisterSuccessActivity"
             android:exported="false" />
         <activity
+            android:name=".view.StudentProfileActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
-            android:exported="true" />
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

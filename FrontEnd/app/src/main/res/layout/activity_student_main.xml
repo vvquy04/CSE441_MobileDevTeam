@@ -30,7 +30,7 @@
             android:id="@+id/userNameText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Vi Văn Quý"
+            android:text=""
             android:textColor="@android:color/black"
             android:textSize="20sp"
             android:textStyle="bold"
@@ -55,7 +55,7 @@
             android:layout_height="40dp"
             android:src="@drawable/profile_placeholder"
             app:civ_border_width="2dp"
-            app:civ_border_color="#FF000000"
+            app:civ_border_color="#071777"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -160,6 +160,7 @@
             android:orientation="vertical">
 
             <androidx.cardview.widget.CardView
+                android:id="@+id/cardCNPM"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="12dp"
@@ -192,6 +193,7 @@
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
+                android:id="@+id/cardHTTT"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="12dp"
@@ -224,6 +226,7 @@
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
+                android:id="@+id/cardANM"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="12dp"
@@ -256,6 +259,7 @@
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
+                android:id="@+id/cardTTNT"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="12dp"
@@ -280,7 +284,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Bộ môn\nMạng và an toàn bảo mật"
+                        android:text="Bộ môn\nTrí tuệ nhân tạo"
                         android:textColor="@android:color/white"
                         android:textSize="16sp"
                         android:layout_marginStart="16dp"/>
@@ -295,14 +299,14 @@
         android:id="@+id/bottomNavigationView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@drawable/cr10b071777"
+        android:background="#071777"
         app:menu="@menu/bottom_navigation_menu"
         app:itemIconSize="32dp"
+        android:layout_gravity="bottom"
         app:itemIconTint="@android:color/white"
         app:itemTextColor="@android:color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        />
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

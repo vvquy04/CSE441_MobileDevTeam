@@ -15,6 +15,7 @@ import com.example.tluofficehours.R;
 import com.example.tluofficehours.utils.EmailValidator;
 import com.example.tluofficehours.viewmodel.RegisterViewModel;
 import com.google.android.material.textfield.TextInputLayout;
+import com.example.tluofficehours.view.RegisterProfileFacultyActivity;
 
 public class RegisterActivity extends AppCompatActivity {
     private EditText edtEmail, edtPassword, edtConfirmPassword;

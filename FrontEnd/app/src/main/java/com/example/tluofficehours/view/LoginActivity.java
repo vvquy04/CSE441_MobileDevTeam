@@ -16,26 +16,30 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.example.tluofficehours.R;
 import com.example.tluofficehours.model.LoginRequest;
+import com.example.tluofficehours.model.LoginResponse;
 import com.example.tluofficehours.api.ApiService;
 import com.example.tluofficehours.api.RetrofitClient;
-import okhttp3.ResponseBody;
+import com.example.tluofficehours.utils.SharedPrefsManager;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import org.json.JSONObject;
-import org.json.JSONArray;
 
 public class LoginActivity extends AppCompatActivity {
     private TextView txtRegister;
     private EditText edtEmail, edtPassword;
     private Button btnLogin;
+//HEAD
     private SharedPreferences sharedPreferences;
+//
+    private SharedPrefsManager sharedPrefsManager;
+// vanquy_refactor
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         
+//HEAD
         // Initialize SharedPreferences
         sharedPreferences = getSharedPreferences("TLUOfficeHours", MODE_PRIVATE);
         
@@ -78,6 +82,10 @@ public class LoginActivity extends AppCompatActivity {
         
         // Initialize RetrofitClient with context
         RetrofitClient.init(this);
+//
+        // Initialize SharedPrefsManager
+        sharedPrefsManager = SharedPrefsManager.getInstance(this);
+// vanquy_refactor
         
         txtRegister = findViewById(R.id.txt_register);
         edtEmail = findViewById(R.id.edt_email);
@@ -102,11 +110,12 @@ public class LoginActivity extends AppCompatActivity {
     private void login(String email, String password) {
         ApiService apiService = RetrofitClient.getApiService();
         LoginRequest loginRequest = new LoginRequest(email, password);
-        Call<ResponseBody> call = apiService.login(loginRequest);
-        call.enqueue(new Callback<ResponseBody>() {
+        Call<LoginResponse> call = apiService.login(loginRequest);
+        call.enqueue(new Callback<LoginResponse>() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+            public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
+//HEAD
                     try {
                         String responseStr = response.body().string();
                         JSONObject jsonObject = new JSONObject(responseStr);
@@ -182,15 +191,63 @@ public class LoginActivity extends AppCompatActivity {
                         }
                     } catch (Exception e) {
                         Toast.makeText(LoginActivity.this, "Lỗi xử lý dữ liệu: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+//
+                    LoginResponse loginResponse = response.body();
+                    
+                    // Save auth token
+                    String accessToken = loginResponse.getAccessToken();
+                    android.util.Log.d("LoginActivity", "Login successful, token: " + (accessToken != null ? accessToken.substring(0, Math.min(20, accessToken.length())) + "..." : "null"));
+                    sharedPrefsManager.saveAuthToken(accessToken);
+                    android.util.Log.d("LoginActivity", "Token saved to SharedPrefs: " + sharedPrefsManager.getAuthToken());
+                    RetrofitClient.setAuthToken(accessToken);
+                    android.util.Log.d("LoginActivity", "Token set to RetrofitClient: " + accessToken);
+                    sharedPrefsManager.saveUserEmail(email);
+                    
+                    String[] roles = loginResponse.getRoles();
+                    boolean isStudent = false, isFaculty = false;
+                    String userRole = "";
+                    
+                    for (String role : roles) {
+                        if (role.equalsIgnoreCase("student")) {
+                            isStudent = true;
+                            userRole = "student";
+                        }
+                        if (role.equalsIgnoreCase("faculty")) {
+                            isFaculty = true;
+                            userRole = "faculty";
+                        }
+                    }
+                    
+                    // Save user role
+                    sharedPrefsManager.saveUserRole(userRole);
+                    android.util.Log.d("LoginActivity", "User role: " + userRole);
+                    
+                    if (isStudent) {
+                        Intent intent = new Intent(LoginActivity.this, StudentMainActivity.class);
+                        startActivity(intent);
+                        finish();
+                    } else if (isFaculty) {
+                        Intent intent = new Intent(LoginActivity.this, FacultyMainActivity.class);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        Toast.makeText(LoginActivity.this, "Không xác định được vai trò!", Toast.LENGTH_SHORT).show();
+// vanquy_refactor
                     }
                 } else {
+                    android.util.Log.e("LoginActivity", "Login failed: " + response.code() + " - " + response.message());
                     Toast.makeText(LoginActivity.this, "Đăng nhập thất bại!", Toast.LENGTH_SHORT).show();
                 }
             }
             
             @Override
+//HEAD
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Toast.makeText(LoginActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+//
+            public void onFailure(Call<LoginResponse> call, Throwable t) {
+                Toast.makeText(LoginActivity.this, "Lỗi kết nối!", Toast.LENGTH_SHORT).show();
+// vanquy_refactor
             }
         });
     }
