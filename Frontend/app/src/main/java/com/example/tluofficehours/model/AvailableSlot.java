@@ -33,7 +33,7 @@ public class AvailableSlot {
     
     // UI state properties
     private boolean isSelected = false;
-    private Button buttonView;
+    private transient Button buttonView;
     
     // Getters
     public String getSlotId() { return slotId; }
