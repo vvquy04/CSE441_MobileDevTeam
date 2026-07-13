@@ -1,13 +1,7 @@
 package com.tlu.officehours.config;
 
-import com.tlu.officehours.entity.Department;
-import com.tlu.officehours.entity.FacultyProfile;
-import com.tlu.officehours.entity.Role;
-import com.tlu.officehours.entity.User;
-import com.tlu.officehours.repository.DepartmentRepository;
-import com.tlu.officehours.repository.FacultyProfileRepository;
-import com.tlu.officehours.repository.RoleRepository;
-import com.tlu.officehours.repository.UserRepository;
+import com.tlu.officehours.entity.*;
+import com.tlu.officehours.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,6 +23,9 @@ public class DataInitializer implements CommandLineRunner {
 
     @Autowired
     private FacultyProfileRepository facultyProfileRepository;
+
+    @Autowired
+    private StudentProfileRepository studentProfileRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -62,6 +59,9 @@ public class DataInitializer implements CommandLineRunner {
         initFaculty("thay.tran@tlu.edu.vn", "123456", "TS. Trần Thị B", "HTTT", "Tiến sĩ", "0987654322", "Phòng 102", facultyRole);
         initFaculty("thay.le@tlu.edu.vn", "123456", "ThS. Lê Văn C", "ANM", "Thạc sĩ", "0987654323", "Phòng 103", facultyRole);
         initFaculty("thay.pham@tlu.edu.vn", "123456", "TS. Phạm Thị D", "TTNT", "Tiến sĩ", "0987654324", "Phòng 104", facultyRole);
+
+        // 5. Initialize Student User
+        initStudent("sinhvien@e.tlu.edu.vn", "123456", "Nguyễn Văn Sinh Viên", "SV2251170001", "63CNPM1", "0123456789", studentRole);
     }
 
     private Role initRole(String roleName) {
@@ -103,6 +103,27 @@ public class DataInitializer implements CommandLineRunner {
             profile.setOfficeLocation(office);
             facultyProfileRepository.save(profile);
             System.out.println("Seeded faculty account: " + email + " / " + rawPassword);
+        }
+    }
+
+    private void initStudent(String email, String rawPassword, String studentName, String studentCode,
+                             String className, String phone, Role studentRole) {
+        if (!userRepository.existsByEmail(email)) {
+            User user = new User();
+            user.setEmail(email);
+            user.setPassword(passwordEncoder.encode(rawPassword));
+            user.setEmailVerifiedAt(LocalDateTime.now());
+            user.getRoles().add(studentRole);
+            User savedUser = userRepository.save(user);
+
+            StudentProfile profile = new StudentProfile();
+            profile.setStudentUserId(savedUser.getUserId());
+            profile.setStudentName(studentName);
+            profile.setStudentCode(studentCode);
+            profile.setClassName(className);
+            profile.setPhoneNumber(phone);
+            studentProfileRepository.save(profile);
+            System.out.println("Seeded student account: " + email + " / " + rawPassword);
         }
     }
 }
