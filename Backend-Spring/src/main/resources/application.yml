@@ -33,7 +33,7 @@ app:
   jwt:
     secret: TLUOfficeHoursJWTSecretKey2025VeryLongSecretKeyForSecurity123456789
     expiration-ms: 86400000  # 24 hours
-  base-url: http://192.168.1.9:8000
+  base-url: https://shimmer-itinerary-spilt.ngrok-free.dev
   upload-dir: ./uploads
 
 logging:
