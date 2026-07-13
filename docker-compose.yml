@@ -12,7 +12,29 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - tlu-network
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: tlu-officehours-ngrok
+    restart: always
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    command:
+      - "http"
+      - "host.docker.internal:8000"
+    ports:
+      - "4040:4040"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - tlu-network
 
 volumes:
   mysql_data:
+
+networks:
+  tlu-network:
+    driver: bridge
 
