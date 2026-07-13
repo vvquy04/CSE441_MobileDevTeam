@@ -45,8 +45,8 @@ public class BookingService {
             throw new BadRequestException("Unauthorized: Only students can book appointments.");
         }
 
-        // Find slot
-        AvailableSlot slot = availableSlotRepository.findById(slotId)
+        // Find slot with pessimistic write lock to handle concurrency safely
+        AvailableSlot slot = availableSlotRepository.findByIdForUpdate(slotId)
             .orElseThrow(() -> new ResourceNotFoundException("Slot not found"));
 
         // Check availability
